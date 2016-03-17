@@ -3,6 +3,7 @@
 Delphi XE2 ve sonrası versiyonlarda çalışır.
 
 Kullanılan 3. Parti Kaynaklar.
+
 AES Encryption için ElAES.pas (EldoS , Alexander Ionov) Source Klasöründe bulunmakta.  
 Seri Haberleşme İçin Comport Libraray (https://sourceforge.net/projects/comport/) buradan indirip kurabilirsiniz.
 
