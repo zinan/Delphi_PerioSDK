@@ -10,7 +10,8 @@ uses
 const
   field_separator_ = chr(31);
   record_separator_ = chr(30);
-
+  PerioNullDate = 73050;
+  
 type
   TLanguage = (langTR, langEN);
   TServerConnectionType = (sctClientServer, sctRestService);
