@@ -56,10 +56,8 @@ begin
       Begin
         for j := 0 to 7 do
         Begin
-          grdTCTable.Cells[(j*2)+1, i + 1] :=
-            copy(TimeToStr(TACList.Day[i].Part[j].StartTime), 1, 5);
-          grdTCTable.Cells[(j*2)+2, i + 1] :=
-            copy(TimeToStr(TACList.Day[i].Part[j].EndTime), 1, 5);
+          grdTCTable.Cells[(j*2)+1, i + 1] :=copy(TimeToStr(TACList.Day[i].Part[j].StartTime), 1, 5);
+          grdTCTable.Cells[(j*2)+2, i + 1] :=copy(TimeToStr(TACList.Day[i].Part[j].EndTime), 1, 5);
         End;
       End;
       AddLog('Zaman Kýsýt Tablosu getirildi.');

@@ -127,11 +127,6 @@ type
 }
 
 type
-
-  TprLogLevel = (lgDebug, lgVerbose, lgMessage, lgWarning, lgError, lgFatal);
-
-  TLogEvent = procedure(Sender: TObject; const Log: string) of object;
-
   TByteBuffer     = array[0..1023] of byte;
 
   TRDRBuffer = record

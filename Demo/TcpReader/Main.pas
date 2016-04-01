@@ -12,6 +12,7 @@ uses
   Vcl.Grids, Vcl.FileCtrl, IdSocketHandle, IdBaseComponent, IdComponent,
   IdUDPBase, IdUDPServer, IdGlobal,
   Perio.Global,
+  Perio.Log,
   PerioDevice,
   PerioDevice.TCPReaderBase,
   PerioDevice.TCPReader;
@@ -288,7 +289,6 @@ type
     Label57: TLabel;
     edtLogUDPPortNo: TSpinEdit;
     btnLogUDPStart: TButton;
-    IdUDPServer: TIdUDPServer;
     btnUDPLogClear: TButton;
     mmUDPLog: TMemo;
     lblIndexNo: TLabel;
@@ -719,8 +719,6 @@ type
     procedure btnOffMsgGonderClick(Sender: TObject);
     procedure btnLogUDPStartClick(Sender: TObject);
     procedure btnUDPLogClearClick(Sender: TObject);
-    procedure IdUDPServerUDPRead(AThread: TIdUDPListenerThread;
-      const AData: TIdBytes; ABinding: TIdSocketHandle);
     procedure cbHeaderTypeChange(Sender: TObject);
     procedure cbFooterTypeChange(Sender: TObject);
     procedure edtLineCountChange(Sender: TObject);
@@ -795,9 +793,13 @@ type
   private
     { Private declarations }
     OffflineMsg: array  of TMsg;
+    procedure rdrLog(Sender: TObject;const LogLevel : TprLogLevel;const Log: string);
+    procedure UDPServerUDPRead(AThread: TIdUDPListenerThread;
+      const AData: TIdBytes; ABinding: TIdSocketHandle);
   public
     ReadDataBlock : Boolean;
     Rdr : TPerioTCPRdr;
+    UDPServer: TIdUDPServer;
 
     procedure AddLog(str: String; SM: Boolean = False);
     procedure OfflineMsgLoad;
@@ -1039,7 +1041,7 @@ begin
       Person.MealSettingListNo := edtMealListNo.Value;
       Person.WeeklyTotalMealCount := edtWeeklyMealRight.Value;
       Person.MonthlyTotalMealCount := edtMonthlyMealRight.Value;
-      Person.BlackListCmdNo := edtBlackListCmdNo.Value;
+      Person.BlackListCmdNo := 0;
       Person.NeedCmdControl := edtNeedCmdControl.Value;
       Person.BirthDate := edtBirthDate.Date;
       iErr := Rdr.AddWhitelist(Person, InxNm);
@@ -1232,7 +1234,7 @@ begin
       Person.WeeklyTotalMealCount := edtWeeklyMealRight.Value;
       Person.MonthlyTotalMealCount := edtMonthlyMealRight.Value;
       //
-      Person.BlackListCmdNo := edtBlackListCmdNo.Value;
+      Person.BlackListCmdNo := 0;
       Person.NeedCmdControl := edtNeedCmdControl.Value;
       Person.BirthDate := edtBirthDate.Date;
 
@@ -1679,6 +1681,7 @@ begin
         cbIsOnlineCard.Checked := Person.isOnlineCard;
         cbPermitedInEmergency.Checked := Person.PermitedInEmergency;
         edtMealListNo.Value := Person.MealSettingListNo;
+
         edtWeeklyMealRight.Value := Person.WeeklyTotalMealCount;
         edtMonthlyMealRight.Value := Person.MonthlyTotalMealCount;
         edtBlackListCmdNo.Value := Person.BlackListCmdNo;
@@ -2218,9 +2221,9 @@ end;
 
 procedure TfrmMain.btnLogUDPStartClick(Sender: TObject);
 begin
-  IdUDPServer.Active := False;
-  IdUDPServer.DefaultPort := edtLogUDPPortNo.Value;
-  IdUDPServer.Active := True;
+  UDPServer.Active := False;
+  UDPServer.DefaultPort := edtLogUDPPortNo.Value;
+  UDPServer.Active := True;
 end;
 
 procedure TfrmMain.btnMealRightTableClick(Sender: TObject);
@@ -4152,6 +4155,7 @@ Begin
     OffflineMsg[25].MsgName := 'Yetersiz Bakiye';
     OffflineMsg[26].MsgID := 69;
     OffflineMsg[26].MsgName := 'Öðün Dýþý';
+
     OffflineMsg[27].MsgID := 70;
     OffflineMsg[27].MsgName := 'Cihaz Bilgi ekraný';
     OffflineMsg[28].MsgID := 71;
@@ -4208,21 +4212,15 @@ begin
   Rdr.OnTagRead := RdrTagRead;
   Rdr.OnDoorOpenAlarm := RdrDoorOpenAlarm;
   Rdr.OnSerialReadStr := RdrSerialReadStr;
+  Rdr.Onlog := rdrLog;
+  UDPServer := TIdUDPServer.Create(Self);
+  UDPServer.OnUDPRead := UDPServerUDPRead;
 
   tsMfrKeyTable.TabVisible := false;
   tsDataFlash.TabVisible := True;
   tsHGSSettings.TabVisible := false;
   tsHGSInOutValues.TabVisible := false;
   tsYMKSettings.TabVisible := False;
-
-//  PerioLog.AppName := 'PerioReader';
-//  PerioLog.LogParams.LogConnections := PerioAppInfo.LogDir +
-//    PerioLog.AppName + '.Log';
-//  PerioLog.LogParams.LogLevel := 'Debug';
-//  PerioLog.LogParams.LogDefaultLevel := 'Debug';
-//  PerioLog.LogParams.LogEnabled := True;
-//  PerioLog.SessionName := 'TcpReader';
-//  PerioLog.Active := True;
 
   pgTCPReader.ActivePageIndex := 0;
   pgTCPReader.Enabled := False;
@@ -4242,9 +4240,10 @@ begin
     rdr.DisConnect;
     Rdr.Free;
   End;
+  UDPServer.Free;
 end;
 
-procedure TfrmMain.IdUDPServerUDPRead(AThread: TIdUDPListenerThread;
+procedure TfrmMain.UDPServerUDPRead(AThread: TIdUDPListenerThread;
   const AData: TIdBytes; ABinding: TIdSocketHandle);
 Var
   str: String;
@@ -4253,7 +4252,6 @@ begin
   mmUDPLog.Lines.Add(DateTimeToStr(now)+' > '+str);
   //PerioLog.LogDebug('UDP_Log_' + ABinding.PeerIP, str);
 end;
-
 procedure TfrmMain.mmdfDblClick(Sender: TObject);
 begin
   //mmdf.Selected
@@ -4359,6 +4357,12 @@ begin
   End
   else
     AddLog('Onay Tipi : [Cancel] - InputText [' + InputText + ']');
+end;
+
+procedure TfrmMain.rdrLog(Sender: TObject; const LogLevel: TprLogLevel;
+  const Log: string);
+begin
+   AddLog('['+GetLogLevelText(LogLevel)+'] '+Log);
 end;
 
 procedure TfrmMain.RdrPasswordRead(Sender: TObject; const PassType: Byte; const Password: Word;

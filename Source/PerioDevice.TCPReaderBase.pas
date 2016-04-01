@@ -154,7 +154,7 @@ type
       ErrorID: Integer = 0);
 
     procedure DoOnCardRead(const CardID: string);
-    procedure DoOnLog(const Msg: string);
+    //procedure DoOnLog(const Msg: string);
     procedure DoOnTurnstileTurn(Const Success: Boolean;const CardID: string);
     procedure DoOnTagRead(const IO:byte;const TagID: string);
     procedure DoOnSerialReadStr(const SerialPortNo:byte;const Data:String);
@@ -1427,12 +1427,13 @@ begin
   if Assigned(fOnCardRead) then
     fOnCardRead(Self, CardID);
 end;
-
+{
 procedure TTcpRdrBase.DoOnLog(const Msg: string);
 Begin
   if Assigned(fOnLog) then
     fOnLog(Self, Msg);
 End;
+}
 
 procedure TTcpRdrBase.DoOnPasswordRead(const PassType :byte ;const Password :word ;const Code:LongWord);
 Begin
@@ -1525,8 +1526,6 @@ Begin
         begin
           fConnected := False;
           DoLog(lgError,'CheckOnlineData', 'Exception:' + E.Message);
-          //LogError('CheckOnlineData', 'Exception:' + E.Message);
-          DoOnLog('CheckOnlineData - Exception:' + E.Message);
         end;
       end; // try
     end;
@@ -1980,7 +1979,7 @@ begin
       LogMsg := '[' + aMethodName + '] [' + ErrorID.ToString() + ']' + aMsg
     else
       LogMsg := '[' + aMethodName + '] ' + aMsg;
-    FOnLog(Self, LogMsg);
+    FOnLog(Self,LogLevel, LogMsg);
   End;
 end;
 

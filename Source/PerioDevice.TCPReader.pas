@@ -29,6 +29,7 @@ uses
   Classes,
   SysUtils,
   DateUtils,
+  Perio.Global,
   PerioDevice,
   PerioDevice.TCPReaderBase;
 

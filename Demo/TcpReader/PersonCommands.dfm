@@ -2,8 +2,8 @@ object frmPersonCommands: TfrmPersonCommands
   Left = 0
   Top = 0
   Caption = 'Person Commands'
-  ClientHeight = 353
-  ClientWidth = 515
+  ClientHeight = 559
+  ClientWidth = 555
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,11 +17,12 @@ object frmPersonCommands: TfrmPersonCommands
   object Panel3: TPanel
     Left = 0
     Top = 0
-    Width = 515
+    Width = 555
     Height = 32
     Align = alTop
     BevelInner = bvLowered
     TabOrder = 0
+    ExplicitWidth = 515
     object Label1: TLabel
       Left = 24
       Top = 8
@@ -74,19 +75,21 @@ object frmPersonCommands: TfrmPersonCommands
     end
   end
   object mmLog: TMemo
-    Left = 351
+    Left = 391
     Top = 32
     Width = 164
-    Height = 321
+    Height = 527
     Align = alRight
     ReadOnly = True
     TabOrder = 2
+    ExplicitLeft = 351
+    ExplicitHeight = 321
   end
   object grdBellTable: TStringGrid
     Left = 0
     Top = 32
-    Width = 351
-    Height = 321
+    Width = 391
+    Height = 527
     Align = alClient
     BevelInner = bvNone
     BevelKind = bkFlat
@@ -98,6 +101,8 @@ object frmPersonCommands: TfrmPersonCommands
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
     ParentCtl3D = False
     TabOrder = 1
+    ExplicitWidth = 351
+    ExplicitHeight = 321
     ColWidths = (
       50
       52

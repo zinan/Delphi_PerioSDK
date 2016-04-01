@@ -11,18 +11,19 @@ const
   field_separator_ = chr(31);
   record_separator_ = chr(30);
   PerioNullDate = 73050;
-  
+
 type
   TLanguage = (langTR, langEN);
   TServerConnectionType = (sctClientServer, sctRestService);
   TClientRestType = (crtLocalDB,crtMemoryDB);
-  TPerioApplicationType = (prWinApp,prWinService);
+  TPerioApplicationType = (prWinApp,prWinService,prWinWebApp);
 
   TprRecMode = (prAdd,prEdit,prCloneAdd);
 
   TprLogLevel = (lgDebug, lgVerbose, lgMessage, lgWarning, lgError, lgFatal);
-  TprLogEvent = procedure(Sender: TObject; const Log: string) of object;
+  TprLogEvent = procedure(Sender: TObject;const LogLevel : TprLogLevel;const Log: string) of object;
 
+  function GetLogLevelText(LogLevel : TprLogLevel) : string;
   function prMin(const AValueOne, AValueTwo: Int64): Int64; overload;
   function prMin(const AValueOne, AValueTwo: LongInt): LongInt; overload;
   function prMin(const AValueOne, AValueTwo: Word): Word; overload;
@@ -45,8 +46,22 @@ type
   function StrToDateTime_rowtext(sDT: String): TDateTime;
   function DateTimeToStrPerio(Value : TDateTime):string;
   function GetLanguage(iValue : string):TLanguage;
+  function GetBoolean(str : string):Boolean;
+  function GetTime(str : string):TTime;
 
 implementation
+
+function GetLogLevelText(LogLevel : TprLogLevel) : string;
+Begin
+  case LogLevel of
+    lgDebug : Result := 'Debug';
+    lgVerbose : Result := 'Verbose';
+    lgMessage : Result := 'Message';
+    lgWarning : Result := 'Warning';
+    lgError : Result := 'Error';
+    lgFatal : Result := 'Fatal';
+  end;
+End;
 
 function GetLanguage(iValue : string):TLanguage;
 Begin
@@ -376,6 +391,25 @@ Begin
     Format('%.2d', [ADay]) + Format('%.2d', [AHour]) + Format('%.2d', [AMinute])
     + Format('%.2d', [ASecond]);
 End;
+
+function GetBoolean(str : string):Boolean;
+Begin
+  Result := (UpperCase(Str)='T');
+End;
+
+function GetTime(str : string):TTime;
+Var
+  tmpTime : TTime;
+  Hour, Min, Sec, MSec : Word;
+Begin
+  Hour := StrToInt(Copy(str,1,2));
+  Min :=  StrToInt(Copy(str,4,2));
+  Sec := 0;
+  MSec := 0;
+  tmpTime := EncodeTime(Hour, Min, Sec, MSec);
+  Result := tmpTime;
+End;
+
 
 
 end.
