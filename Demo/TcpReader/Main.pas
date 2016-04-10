@@ -12,7 +12,6 @@ uses
   Vcl.Grids, Vcl.FileCtrl, IdSocketHandle, IdBaseComponent, IdComponent,
   IdUDPBase, IdUDPServer, IdGlobal,
   Perio.Global,
-  Perio.Log,
   PerioDevice,
   PerioDevice.TCPReaderBase,
   PerioDevice.TCPReader;
