@@ -17,7 +17,8 @@ uses
   StaticMealRightTable in 'StaticMealRightTable.pas' {frmStaticMealRightTable},
   PersonMealRightList in 'PersonMealRightList.pas' {frmPersonMealRightList},
   MealNameList in 'MealNameList.pas' {frmMealNameList},
-  PersonCommands in 'PersonCommands.pas' {frmPersonCommands};
+  PersonCommands in 'PersonCommands.pas' {frmPersonCommands},
+  PersonTZList in 'PersonTZList.pas' {frmPersonTZList};
 
 {$R *.res}
 

@@ -28,7 +28,7 @@
       Top = 0
       Width = 312
       Height = 614
-      ActivePage = TabAppLog
+      ActivePage = TabUDPLog
       Align = alClient
       TabOrder = 0
       object TabAppLog: TTabSheet
@@ -71,10 +71,6 @@
       object TabUDPLog: TTabSheet
         Caption = 'Cihaz UDP Loglar'#305
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 345
-        ExplicitHeight = 711
         object Panel3: TPanel
           Left = 0
           Top = 0
@@ -83,7 +79,6 @@
           Align = alTop
           BevelInner = bvLowered
           TabOrder = 0
-          ExplicitWidth = 345
           object Label57: TLabel
             Left = 8
             Top = 10
@@ -128,8 +123,6 @@
           Align = alClient
           ReadOnly = True
           TabOrder = 1
-          ExplicitWidth = 345
-          ExplicitHeight = 670
         end
       end
     end
@@ -220,7 +213,7 @@
         Width = 90
         Height = 21
         TabOrder = 2
-        Text = '192.168.0.170'
+        Text = '192.168.0.175'
       end
       object edtConnectPortNo: TSpinEdit
         Left = 350
@@ -368,7 +361,7 @@
       Top = 89
       Width = 675
       Height = 525
-      ActivePage = tsDeviceSettings
+      ActivePage = tsAccessSettings
       Align = alClient
       TabOrder = 1
       object tsDeviceSettings: TTabSheet
@@ -938,19 +931,19 @@
           Left = 458
           Top = 3
           Width = 207
-          Height = 271
+          Height = 299
           Caption = '  Cihaz '#199'al'#305#351'ma Modu  '
           TabOrder = 2
           object Label2: TLabel
             Left = 7
-            Top = 224
+            Top = 251
             Width = 62
             Height = 13
             Caption = 'Zaman A'#351#305'm'#305' '
           end
           object Label3: TLabel
             Left = 147
-            Top = 225
+            Top = 252
             Width = 32
             Height = 13
             Caption = '(M.Sn)'
@@ -988,7 +981,7 @@
           end
           object cbOnlineEnabledOffline: TCheckBox
             Left = 6
-            Top = 163
+            Top = 190
             Width = 198
             Height = 51
             Caption = 
@@ -999,7 +992,7 @@
           end
           object edtOnlineTimeOut: TSpinEdit
             Left = 73
-            Top = 221
+            Top = 248
             Width = 68
             Height = 22
             MaxValue = 0
@@ -1009,7 +1002,7 @@
           end
           object btnGetWorkMode: TButton
             Left = 34
-            Top = 248
+            Top = 275
             Width = 65
             Height = 20
             Caption = 'Getir'
@@ -1018,7 +1011,7 @@
           end
           object btnSetWorkMode: TButton
             Left = 105
-            Top = 249
+            Top = 276
             Width = 65
             Height = 20
             Caption = 'G'#246'nder'
@@ -1055,10 +1048,18 @@
               'UDP'
               'TCP Client Mode')
           end
+          object rbSendSerial: TRadioButton
+            Left = 32
+            Top = 165
+            Width = 145
+            Height = 17
+            Caption = 'Online Serial'
+            TabOrder = 10
+          end
         end
         object grSerialNumber: TGroupBox
-          Left = 459
-          Top = 280
+          Left = 457
+          Top = 308
           Width = 207
           Height = 72
           Caption = ' Cihaz Seri Numaras'#305
@@ -1091,8 +1092,8 @@
           end
         end
         object GroupBox7: TGroupBox
-          Left = 462
-          Top = 356
+          Left = 458
+          Top = 386
           Width = 207
           Height = 108
           Caption = ' Seri Port Baudrate Ayarlar'#305
@@ -1220,10 +1221,6 @@
       object tsCominicationSettings: TTabSheet
         Caption = 'Haberle'#351'me Ayarlar'#305
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object grIpSettings: TGroupBox
           Left = 1
           Top = 2
@@ -1650,10 +1647,6 @@
       object tsMfrKeyTable: TTabSheet
         Caption = 'Mifare '#350'ifre Tablosu'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object grdMfrKeyList: TStringGrid
           Left = 0
           Top = 0
@@ -1670,7 +1663,6 @@
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
           ParentCtl3D = False
           TabOrder = 0
-          ExplicitHeight = 513
           ColWidths = (
             30
             129
@@ -1725,25 +1717,16 @@
       object tsLCDMessages: TTabSheet
         Caption = 'Ekran Mesajlar'#305
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object PageControl1: TPageControl
           Left = 0
           Top = 0
           Width = 667
           Height = 497
-          ActivePage = TabSheet1
+          ActivePage = TabSheet2
           Align = alClient
           TabOrder = 0
-          ExplicitHeight = 622
           object TabSheet1: TTabSheet
             Caption = 'Online'
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 594
             object GroupBox8: TGroupBox
               Left = 0
               Top = 8
@@ -2449,10 +2432,6 @@
           object TabSheet2: TTabSheet
             Caption = 'Offline'
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 594
             object GroupBox3: TGroupBox
               Left = 3
               Top = 3
@@ -2918,15 +2897,25 @@
       object tsAccessSettings: TTabSheet
         Caption = 'Uygulama Ayarlar'#305
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
+        object Label143: TLabel
+          Left = 16
+          Top = 394
+          Width = 60
+          Height = 13
+          Caption = 'Status Mode'
+        end
+        object Label144: TLabel
+          Left = 16
+          Top = 422
+          Width = 53
+          Height = 13
+          Caption = 'Mode Type'
+        end
         object grAppGeneralSettings: TGroupBox
           Left = 3
           Top = 0
           Width = 350
-          Height = 164
+          Height = 181
           Caption = '  Genel Ayarlar  '
           TabOrder = 0
           object lblAccesType: TLabel
@@ -2958,9 +2947,16 @@
             Caption = 'Ge'#231'i'#351' S'#252'resi'
             Visible = False
           end
+          object Label145: TLabel
+            Left = 238
+            Top = 106
+            Width = 99
+            Height = 13
+            Caption = 'Ki'#351'i Zaman Ks'#305't Modu'
+          end
           object btnGetAppgeneralSettings: TButton
-            Left = 16
-            Top = 138
+            Left = 13
+            Top = 154
             Width = 65
             Height = 20
             Caption = 'Getir'
@@ -2968,8 +2964,8 @@
             OnClick = btnGetAppgeneralSettingsClick
           end
           object btnSetAppgeneralSettings: TButton
-            Left = 103
-            Top = 138
+            Left = 106
+            Top = 155
             Width = 65
             Height = 20
             Caption = 'G'#246'nder'
@@ -3020,9 +3016,9 @@
               'Kap'#305' A'#231#305'k Kald'#305' Alarm'#305)
           end
           object seInputDuration: TSpinEdit
-            Left = 183
-            Top = 103
-            Width = 99
+            Left = 152
+            Top = 100
+            Width = 80
             Height = 22
             MaxValue = 0
             MinValue = 0
@@ -3031,8 +3027,8 @@
             Visible = False
           end
           object cbATC: TCheckBox
-            Left = 232
-            Top = 24
+            Left = 238
+            Top = 16
             Width = 97
             Height = 24
             Caption = 'Zaman K'#305's'#305't Tablosu Etkin'
@@ -3040,18 +3036,41 @@
             WordWrap = True
           end
           object btnTCTable: TButton
-            Left = 204
-            Top = 141
+            Left = 214
+            Top = 46
             Width = 125
             Height = 20
             Caption = 'Zaman K'#305's'#305't Tablosu'
             TabOrder = 7
             OnClick = btnTCTableClick
           end
+          object Button16: TButton
+            Left = 203
+            Top = 155
+            Width = 125
+            Height = 20
+            Caption = 'Ki'#351'i Z. K'#305's'#305't Tablosu'
+            TabOrder = 8
+            OnClick = Button16Click
+          end
+          object cbPersTZMode: TComboBox
+            Left = 194
+            Top = 128
+            Width = 143
+            Height = 21
+            Style = csDropDownList
+            BiDiMode = bdLeftToRight
+            ParentBiDiMode = False
+            TabOrder = 9
+            Items.Strings = (
+              'Kapal'#305
+              'Zaman Aral'#305#287#305
+              'Zaman Tablo No')
+          end
         end
         object grAPB: TGroupBox
-          Left = 4
-          Top = 171
+          Left = 3
+          Top = 185
           Width = 349
           Height = 118
           Caption = '  Anti Passback Ayarlar'#305'  '
@@ -3378,9 +3397,9 @@
         end
         object gbEksOtherSettings: TGroupBox
           Left = 3
-          Top = 292
+          Top = 310
           Width = 350
-          Height = 118
+          Height = 73
           Caption = '  Di'#287'er EKS Ayarlar'#305'  '
           TabOrder = 4
           object Label11: TLabel
@@ -3460,14 +3479,48 @@
           Caption = 'Yeniden Ba'#351'lat'
           TabOrder = 5
         end
+        object btnGetStausMode: TButton
+          Left = 138
+          Top = 392
+          Width = 65
+          Height = 20
+          Caption = 'Getir'
+          TabOrder = 7
+          OnClick = btnGetStausModeClick
+        end
+        object btnSetStausMode: TButton
+          Left = 138
+          Top = 418
+          Width = 65
+          Height = 20
+          Caption = 'G'#246'nder'
+          TabOrder = 8
+          OnClick = btnSetStausModeClick
+        end
+        object edtStatusModeType: TSpinEdit
+          Left = 84
+          Top = 419
+          Width = 48
+          Height = 22
+          MaxValue = 0
+          MinValue = 0
+          TabOrder = 9
+          Value = 0
+        end
+        object edtStatusMode: TSpinEdit
+          Left = 84
+          Top = 391
+          Width = 48
+          Height = 22
+          MaxValue = 0
+          MinValue = 0
+          TabOrder = 10
+          Value = 0
+        end
       end
       object tsAddWhitelist: TTabSheet
         Caption = 'Ki'#351'i Ekleme'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object lblCardId: TLabel
           Left = 7
           Top = 21
@@ -3490,8 +3543,8 @@
           Caption = 'Zaman K'#305's'#305't'
         end
         object lblDate: TLabel
-          Left = 7
-          Top = 169
+          Left = 9
+          Top = 199
           Width = 103
           Height = 13
           Caption = 'Kart'#305'n Son. Kul. Tarihi'
@@ -3525,11 +3578,11 @@
           Caption = '.............'
         end
         object Label100: TLabel
-          Left = 7
-          Top = 196
-          Width = 62
+          Left = 9
+          Top = 169
+          Width = 96
           Height = 13
-          Caption = 'Do'#287'um Tarihi'
+          Caption = 'Kart Ba'#351'lang'#305#231' Tarihi'
         end
         object edtCardID: TEdit
           Left = 78
@@ -3558,8 +3611,8 @@
           Value = 0
         end
         object edtEndDate: TDateTimePicker
-          Left = 139
-          Top = 166
+          Left = 141
+          Top = 196
           Width = 93
           Height = 21
           Date = 73050.416025474540000000
@@ -3772,8 +3825,8 @@
           TabOrder = 14
         end
         object edtBirthDate: TDateTimePicker
-          Left = 139
-          Top = 193
+          Left = 141
+          Top = 166
           Width = 93
           Height = 21
           Date = 73050.416025474540000000
@@ -3784,10 +3837,6 @@
       object tsInOutValues: TTabSheet
         Caption = 'Giri'#351' '#199#305'k'#305#351' Bilgileri'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object grpCihazGirisCikis: TGroupBox
           Left = 17
           Top = 18
@@ -3885,7 +3934,6 @@
           Align = alBottom
           ScrollBars = ssVertical
           TabOrder = 2
-          ExplicitTop = 371
         end
         object GroupBox9: TGroupBox
           Left = 452
@@ -3933,10 +3981,6 @@
       object tsDataFlash: TTabSheet
         Caption = 'Read - Write Block Data'
         ImageIndex = 7
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object Panel4: TPanel
           Left = 0
           Top = 0
@@ -4063,10 +4107,6 @@
       object tsHGSSettings: TTabSheet
         Caption = 'HGS Ayarlar'#305' - Tag Ekleme'
         ImageIndex = 8
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object Label74: TLabel
           Left = 254
           Top = 22
@@ -4765,10 +4805,6 @@
       object tsHGSInOutValues: TTabSheet
         Caption = 'HGS Giri'#351' '#199#305'k'#305#351' Bilgileri'
         ImageIndex = 9
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object mmHGSFile: TMemo
           Left = 0
           Top = 246
@@ -4777,7 +4813,6 @@
           Align = alBottom
           ScrollBars = ssVertical
           TabOrder = 1
-          ExplicitTop = 371
         end
         object grpHGSCihazGirisCikis: TGroupBox
           Left = 25
@@ -4872,10 +4907,6 @@
       object tsYMKSettings: TTabSheet
         Caption = 'YemekHane - Kont'#246'r Ayarlar'#305
         ImageIndex = 10
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object GroupBox6: TGroupBox
           Left = 3
           Top = 6
@@ -5075,10 +5106,6 @@
       object TabSheet3: TTabSheet
         Caption = 'Black List'
         ImageIndex = 11
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object Label119: TLabel
           Left = 15
           Top = 29
@@ -5198,10 +5225,6 @@
       object TabSheet4: TTabSheet
         Caption = 'Get / Set Node'
         ImageIndex = 12
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object Label102: TLabel
           Left = 15
           Top = 58
@@ -5324,10 +5347,6 @@
       object TabSheet5: TTabSheet
         Caption = 'Mifare Card Read Write'
         ImageIndex = 13
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 622
         object Label139: TLabel
           Left = 18
           Top = 14

@@ -55,7 +55,9 @@ type
     function tcpSetTimeConstraintTables(TableNo : Byte ;TACList : TTACList) : Integer; // CMD 3.14
     function tcpGetEksOtherSettings(out EksOtherSettings:TEksOtherSettings) : Integer; // CMD 3.15
     function tcpSetEksOtherSettings( EksOtherSettings:TEksOtherSettings) : Integer; // CMD 3.16
-    function tcpGetRegularInfo(out deviceDate:TDateTime;out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal) : Integer; // CMD 3.17
+    function tcpGetRegularInfo(out deviceDate:TDateTime;
+        out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal;
+        out DoorOpen :Boolean;out DoorOpenDT :TDateTime;out DeviceStatusMode : Byte) : Integer; // CMD 3.17
     function tcpAddWhitelist(rPerson : TPerson;out IndexNo : Integer) : Integer;overload; // CMD 3.18
     function tcpGetWhitelistWithCardID(CardID:String;out rPerson : TPerson;out IndexNo : Integer) : Integer; // CMD 3.19
     function tcpGetWhitelistWithPwd : Integer; // CMD 3.20
@@ -94,7 +96,11 @@ type
     function tcpSetTumAralarDisarda : Integer; // CMD 3.60
     function tcpGetTreeNode(Address :Cardinal;out Node:Ttree_Node):Integer; // CMD 3.61
     function tcpSetTreeNode(Node:Ttree_Node):Integer; // CMD 3.62
-    // CMD 3.63
+    function tcpGetStatusMode(out StatusMode :Byte;out StatusModeType :Byte):Integer; // CMD 3.63
+    function tcpSetStatusMode(StatusMode :Byte;StatusModeType :Byte ):Integer; // CMD 3.64
+    function tcpGetPersonTZList(CardID : String;out PersTZList : TPersTZList) : Integer; // CMD 3.65
+    function tcpSetPersonTZList(CardID : String;PersTZList : TPersTZList) : Integer; // CMD 3.66
+    // CMD 3.67
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     function tcpGetYmkSettings(out rSettings :TYmkSettings) : Integer; // CMD 4.1
@@ -137,7 +143,9 @@ type
     function SetTimeConstraintTables(TableNo : Byte ;TACList : TTACList) : Boolean;
     function GetEksOtherSettings(out EksOtherSettings:TEksOtherSettings) : Boolean;
     function SetEksOtherSettings( EksOtherSettings:TEksOtherSettings) : Boolean;
-    function GetRegularInfo(out deviceDate:TDateTime;out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal):Boolean;
+    function GetRegularInfo(out deviceDate:TDateTime;
+       out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal;
+       out DoorOpen :Boolean;out DoorOpenDT :TDateTime;out DeviceStatusMode : Byte):Boolean;
     function AddWhitelist(rPerson : TPerson;IfExistEdit:Boolean=false) : Integer;overload;
     function AddWhitelist(rPerson : TPerson;out IndexNum : Integer;IfExistEdit:Boolean=false) : Integer;overload;
     function AddBlacklist(rBlackList : TBlackList;out IndexNum : Integer;IfExistEdit:Boolean=False) : Integer;
@@ -199,6 +207,8 @@ type
     function GetTagListToFile(aFileName : String;StartPage:Integer=1034;EndPage:Integer=1233):Boolean;
     function GetTreeNode(Address :Cardinal;out Node:Ttree_Node):Boolean;
     function SetTreeNode(Node:Ttree_Node):Boolean;
+    function GetStatusMode(out StatusMode :Byte;out StatusModeType :Byte):Boolean;
+    function SetStatusMode(StatusMode :Byte;StatusModeType: byte):Boolean;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     function GetYmkSettings(out rSettings :TYmkSettings) : Boolean;
@@ -221,7 +231,8 @@ type
     function GetPersonCommands(CardID : String;out CommandList : TPersonCommandList) : Boolean;
     function SetPersonCommands(CardID : String;CommandList : TPersonCommandList) : Boolean;
     function DisablePersCommands(CardID : String) : Boolean;
-
+    function GetPersonTZList(CardID : String;out PersTZList : TPersTZList) : Boolean;
+    function SetPersonTZList(CardID : String;PersTZList : TPersTZList): Boolean;
   published
      property fwAppType : TfwAppType  read ffwAppType write ffwAppType;
   end;
@@ -253,7 +264,8 @@ Begin
         rSettings.InputSettings.InputDurationTimeout := prBytesToWord(RecData,1);
         rSettings.AccessMode.AccessType := RecData[3];
         rSettings.AccessMode.PasswordType := RecData[4];
-        rSettings.TimeAccessConstraintEnabled := prBytesToBoolean(RecData,5)
+        rSettings.TimeAccessConstraintEnabled := prBytesToBoolean(RecData,5);
+        rSettings.PersonelTimeZoneMode := RecData[6];
       end;
   except
     on E: Exception do
@@ -277,10 +289,11 @@ Begin
     SendData[3] := rSettings.AccessMode.AccessType;
     SendData[4] := rSettings.AccessMode.PasswordType;
     ToPrBytes(rSettings.TimeAccessConstraintEnabled,SendData,5);
+    SendData[6] := rSettings.PersonelTimeZoneMode;
     iErr := ExecuteCmd(3, // CmdNo
       2, // SubCmdNo
       2, // Acknowledge
-      6,  // DataLen
+      7,  // DataLen
       SendData, RecData // SelectTimeOut
       );
   except
@@ -712,7 +725,9 @@ Begin
   Result := iErr;
 End;
 
-function TPerioTCPRdr.tcpGetRegularInfo(out deviceDate:TDateTime;out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal) : Integer;
+function TPerioTCPRdr.tcpGetRegularInfo(out deviceDate:TDateTime;
+        out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal;
+        out DoorOpen :Boolean;out DoorOpenDT :TDateTime;out DeviceStatusMode : Byte) : Integer;
 Var
   iErr: Integer;
   SendData, RecData: TDataByte;
@@ -726,9 +741,15 @@ Begin
       );
     if iErr = 0 then
     begin
-      deviceDate := EncodeDateTime(RecData[5]+2000,RecData[4],
+      if not TryEncodeDateTime(RecData[5]+2000,RecData[4],
                     RecData[3],RecData[0],RecData[1],
-                    RecData[2],0);
+                    RecData[2],0,deviceDate) Then
+      Begin
+        deviceDate := EncodeDateTime(2000,1,1,0,0,0,0)
+      End;
+//      deviceDate := EncodeDateTime(RecData[5]+2000,RecData[4],
+//                    RecData[3],RecData[0],RecData[1],
+//                    RecData[2],0);
       headTail   := RecData[6];
       head       := RecData[7] +
                    (RecData[8]*256) +
@@ -739,6 +760,14 @@ Begin
       Capacity   := RecData[13] +
                    (RecData[14]*256) +
                    (RecData[15]*256*256);
+      DoorOpen := (RecData[16]=1);
+      if not TryEncodeDateTime(RecData[17]+2000,RecData[18],
+                    RecData[19],RecData[20],RecData[21],
+                    RecData[22],0,DoorOpenDT) Then
+      Begin
+        DoorOpenDT := EncodeDateTime(2000,1,1,0,0,0,0)
+      End;
+      DeviceStatusMode := RecData[23];
     end;
 
   except
@@ -1427,6 +1456,57 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetTreeNode', 'Exception Error : ' + E.Message);
+      iErr := TErrors.EXCEPTION;
+    end;
+  end; // try
+  Result := iErr;
+End;
+
+function TPerioTCPRdr.tcpGetStatusMode(out StatusMode :Byte;out StatusModeType :Byte):Integer; // CMD 3.63
+Var
+  iErr: Integer;
+  SendData, RecData: TDataByte;
+Begin
+  try
+    iErr := ExecuteCmd(3, // CmdNo
+      63, // SubCmdNo
+      63, // Acknowledge
+      0, // DataLen
+      SendData, RecData // SelectTimeOut
+      );
+    if (iErr = 0) then
+    begin
+      StatusMode := RecData[0];
+      StatusModeType := RecData[1];
+    end;
+  except
+    on E: Exception do
+    begin
+      DoLog(lgError,'tcpGetStatusMode', 'Exception Error : ' + E.Message);
+      iErr := TErrors.EXCEPTION;
+    end;
+  end; // try
+  Result := iErr;
+End;
+
+function TPerioTCPRdr.tcpSetStatusMode(StatusMode :Byte;StatusModeType:byte):Integer; // CMD 3.64
+Var
+  iErr: Integer;
+  SendData, RecData: TDataByte;
+Begin
+  try
+    SendData[0] := StatusMode;
+    SendData[1] := StatusModeType;
+    iErr := ExecuteCmd(3, // CmdNo
+      64, // SubCmdNo
+      64, // Acknowledge
+      2, // DataLen
+      SendData, RecData // SelectTimeOut
+      );
+  except
+    on E: Exception do
+    begin
+      DoLog(lgError,'tcpSetStatusMode', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2802,6 +2882,93 @@ Begin
   Result := iErr;
 End;
 
+function TPerioTCPRdr.tcpGetPersonTZList(CardID : String;out PersTZList : TPersTZList) : Integer; // CMD 3.65
+Var
+  iErr ,i,j: Integer;
+  Day,Month,Year,sHour, sMin,eHour, eMin : Word;
+  SendData, RecData: TDataByte;
+Begin
+  try
+    ToPrBytesFromHex(CardID,SendData,0,14);
+    iErr := ExecuteCmd(3, // CmdNo
+      65, // SubCmdNo
+      65, // Acknowledge
+      7,  // DataLen
+      SendData, RecData // SelectTimeOut
+      );
+      if iErr = 0 then
+      Begin
+        for I := 0 to 4 do
+        Begin
+          Day :=    RecData[36*i+0];
+          Month :=  RecData[36*i+1];
+          Year :=   RecData[36*i+2]+2000;
+          PersTZList.List[i].Day := EncodeDate(Year,Month,Day);
+          PersTZList.List[i].TZListNo := RecData[36*i+3];
+          for j := 0 to 7 do
+          Begin
+            sHour := RecData[(36*i+4)+(j*4)+0];
+            sMin :=  RecData[(36*i+4)+(j*4)+1];
+            eHour := RecData[(36*i+4)+(j*4)+2];
+            eMin :=  RecData[(36*i+4)+(j*4)+3];
+            PersTZList.List[i].Part[j].StartTime := EncodeTime(sHour, sMin,0,0);
+            PersTZList.List[i].Part[j].EndTime   := EncodeTime(eHour, eMin,0,0);
+          End;
+
+        End;
+      End;
+  except
+    on E: Exception do
+    begin
+      DoLog(lgError,'tcpGetPersonTZList', 'Exception Error : ' + E.Message);
+      iErr := TErrors.EXCEPTION;
+    end;
+  end; // try
+  Result := iErr;
+End;
+
+function TPerioTCPRdr.tcpSetPersonTZList(CardID : String;PersTZList : TPersTZList) : Integer; // CMD 3.66
+Var
+  iErr ,i,j : Integer;
+  Day,Month,Year,sHour, sMin,eHour, eMin,Sec, MSec : Word;
+  SendData, RecData: TDataByte;
+Begin
+  try
+    ToPrBytesFromHex(CardID,SendData,0,14);
+    for I := 0 to 4 do
+    Begin
+      DecodeDate(PersTZList.List[i].Day,Year,Month,Day);
+      SendData[7+36*i+0] := Day;
+      SendData[7+36*i+1] := Month;
+      SendData[7+36*i+2] := Year-2000;
+      SendData[7+36*i+3] := PersTZList.List[i].TZListNo;
+      for j := 0 to 7 do
+      Begin
+        DecodeTime(PersTZList.List[i].Part[j].StartTime,sHour, sMin,Sec, MSec);
+        DecodeTime(PersTZList.List[i].Part[j].EndTime,eHour, eMin,Sec, MSec);
+        SendData[7+(36*i+4)+(j*4)+0] := sHour;
+        SendData[7+(36*i+4)+(j*4)+1] := sMin;
+        SendData[7+(36*i+4)+(j*4)+2] := eHour;
+        SendData[7+(36*i+4)+(j*4)+3] := eMin;
+      End;
+    End;
+    iErr := ExecuteCmd(3, // CmdNo
+      66, // SubCmdNo
+      66, // Acknowledge
+      187,  // DataLen
+      SendData, RecData // SelectTimeOut
+      );
+  except
+    on E: Exception do
+    begin
+      DoLog(lgError,'tcpSetPersonTZList', 'Exception Error : ' + E.Message);
+      iErr := TErrors.EXCEPTION;
+    end;
+  end; // try
+  Result := iErr;
+End;
+
+
 function TPerioTCPRdr.tcpDisablePersCommands(CardID : String) : Integer; // CMD 4.22
 Var
   iErr ,i: Integer;
@@ -2825,9 +2992,10 @@ Begin
   Result := iErr;
 End;
 
-function TPerioTCPRdr.GetRegularInfo(out deviceDate:TDateTime;out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal):Boolean;
+function TPerioTCPRdr.GetRegularInfo(out deviceDate:TDateTime;out headTail:Byte;out head:Cardinal;out tail:Cardinal;out Capacity:Cardinal;
+   out DoorOpen :Boolean;out DoorOpenDT :TDateTime;out DeviceStatusMode : Byte):Boolean;
 Begin
-  Result := (tcpGetRegularInfo(deviceDate,headTail,head,tail,Capacity)=0);
+  Result := (tcpGetRegularInfo(deviceDate,headTail,head,tail,Capacity,DoorOpen,DoorOpenDT,DeviceStatusMode)=0);
 End;
 
 function TPerioTCPRdr.GetAppGeneralSettings(out rSettings :TAccessGeneralSettings) : Boolean;
@@ -3063,23 +3231,19 @@ Begin
     case lclErr of
       0 :
         Begin
-          iErr := 12;
-          if (iErr <> 0) then
-            DoLog(lgDebug,'DeleteWhitelistWithCardID','Error  ('+IntToStr(iErr)+') ',0);
-            //LogDebug('DeleteWhitelistWithCardID','Error  ('+IntToStr(iErr)+') ',0);
+          IndexNum := -1;
           iErr := 0;
+          DoLog(lgDebug,'DeleteWhitelistWithCardID','Card Not Found ['+CardID+'] iErr : ('+IntToStr(iErr)+') ',0);
         End;
       51:
         begin
           iErr := tcpDeleteWhitelistWithCardID(CardID,IndexNum);
           if (iErr <> 0) then
-            DoLog(lgDebug,'DeleteWhitelistWithCardID','Error  ('+IntToStr(iErr)+') ',0);
-            //LogDebug('DeleteWhitelistWithCardID','Error  ('+IntToStr(iErr)+') ',0);
+            DoLog(lgError,'DeleteWhitelistWithCardID','Error  ['+CardID+'] iErr : ('+IntToStr(iErr)+') ',0);
         end;
       else
         begin
-           DoLog(lgDebug,'DeleteWhitelistWithCardID','Error  ('+IntToStr(lclErr)+') ',0);
-           //LogDebug('DeleteWhitelistWithCardID','Error  ('+IntToStr(lclErr)+') ',0);
+           DoLog(lgError,'DeleteWhitelistWithCardID','Error  ['+CardID+'] iErr : ('+IntToStr(iErr)+') ',0);
            iErr := lclErr;
         end;
       end;
@@ -3268,6 +3432,16 @@ End;
 function TPerioTCPRdr.SetTreeNode(Node:Ttree_Node):Boolean;
 Begin
   Result := (tcpSetTreeNode(Node)=0);
+End;
+
+function TPerioTCPRdr.GetStatusMode(out StatusMode :Byte;out StatusModeType :Byte):Boolean;
+Begin
+  Result := (tcpGetStatusMode(StatusMode,StatusModeType)=0);
+End;
+
+function TPerioTCPRdr.SetStatusMode(StatusMode :Byte;StatusModeType:byte):Boolean;
+Begin
+  Result := (tcpSetStatusMode(StatusMode,StatusModeType)=0);
 End;
 
 function TPerioTCPRdr.GetHGSSettings(out HGS_Settings:THGS_Settings):Boolean;
@@ -3718,6 +3892,16 @@ End;
 function TPerioTCPRdr.DisablePersCommands(CardID : String) : Boolean;
 Begin
   Result := (tcpDisablePersCommands(CardID)=0);
+End;
+
+function TPerioTCPRdr.GetPersonTZList(CardID : String;out PersTZList : TPersTZList) : Boolean;
+Begin
+  Result := (tcpGetPersonTZList(CardID,PersTZList)=0);
+End;
+
+function TPerioTCPRdr.SetPersonTZList(CardID : String;PersTZList : TPersTZList): Boolean;
+Begin
+  Result := (tcpSetPersonTZList(CardID,PersTZList)=0);
 End;
 
 end.

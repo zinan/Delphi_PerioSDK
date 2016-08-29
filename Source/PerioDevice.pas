@@ -213,7 +213,7 @@ type
     RFU : array [0 .. 8] of byte;
   end;
 
-  TWorkingMode = (wmOffline,wmOfflineCard,wmTCPOnline,wmUDPOnline,wmTCPOnlineClientMode);
+  TWorkingMode = (wmOffline,wmOfflineCard,wmTCPOnline,wmUDPOnline,wmTCPOnlineClientMode,wmSendSerail);
   TOnlineCardWorkMode = (womTCPOnline,womUDPOnline,womTCPOnlineClientMode);
   TWorkModeSettings = record
     WorkingMode : TWorkingMode;
@@ -255,6 +255,7 @@ type
     InputSettings :TInputSettings;
     AccessMode :TAccessMode;
     TimeAccessConstraintEnabled:Boolean;
+    PersonelTimeZoneMode : Byte;
   end;
 
   TAPBSettings = record
@@ -329,8 +330,18 @@ type
     List : array [0..47] of TTACList;
   end;
 
+  TPersTZ = record
+    Day : TDate;
+    Part : array [0..7] of TOneTAC;
+    TZListNo : byte;
+  end;
+
+  TPersTZList = record
+    List : array [0..4] of TPersTZ;
+  end;
+
   TScreenLine = record
-    Text : String;
+    Text : AnsiString;
     Alligment : byte;
     X : byte;
     Y : byte;
@@ -339,7 +350,7 @@ type
   TLcdScreen = record
     ID : word;           //2
     HeaderType : byte;   //1
-    Caption : String;    //21
+    Caption : AnsiString;    //21
     Line : array [0..4] of TScreenLine; //105   +15
     FooterType :Byte;   //1
     Footer : String;    //21
@@ -356,7 +367,7 @@ type
 
   TPerson = record
     CardID : string;
-    Name   : string;
+    Name   : Ansistring;
     TimeZoneListNo : byte;
     Code : LongWord;
     Password : Word;
@@ -843,7 +854,7 @@ type
   procedure ToPrBytes(const AValue: Word;Var Data :Array of byte;const AStartIndex : Integer = 0); overload;
   procedure ToPrBytes(const AValue: LongWord;Var Data :Array of byte;const AStartIndex : Integer = 0); overload;
   procedure ToPrBytes(const AValue: Int64;Var Data :Array of byte;const AStartIndex : Integer = 0); overload;
-  procedure ToPrBytes(const AValue: string;Var Data :Array of byte;const AStartIndex : Integer = 0;Const ALength: Integer = 0); overload;
+  procedure ToPrBytes(const AValue: Ansistring;Var Data :Array of byte;const AStartIndex : Integer = 0;Const ALength: Integer = 0); overload;
   procedure ToPrBytes(const AValue: Boolean;Var Data :Array of byte; const AStartIndex : Integer = 0); overload;
 
 //  procedure ToPrBytes(const AValue: Word;Var Data :T16Byte;const AStartIndex : Integer = 0); overload;
@@ -1155,7 +1166,7 @@ Begin
   PInt64(@Data[AStartIndex])^ := AValue;
 End;
 
-function PerioOrd(S:Char):Byte;
+function PerioOrd(S:AnsiChar):Byte;
 Begin
   case S of
     'Ð' : Result := 208;
@@ -1175,7 +1186,7 @@ Begin
   end;
 End;
 
-procedure ToPrBytes(const AValue: string;Var Data :Array of byte;
+procedure ToPrBytes(const AValue: Ansistring;Var Data :Array of byte;
     const AStartIndex : Integer = 0;Const ALength: Integer = 0); overload;
 Var
   BufLen ,strLen ,fark , i : Integer;

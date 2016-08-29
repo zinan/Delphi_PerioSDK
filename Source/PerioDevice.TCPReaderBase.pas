@@ -39,7 +39,8 @@ uses
   IdGlobal,
   IdSocketHandle,
   IdComponent,
-  IdStack;
+  IdStack,
+  IdException;
 
 type
 
@@ -600,7 +601,8 @@ Begin
         fRx_Data_Start_Pos := 12;
       End;
   end;
-  SetLoginKey(fDeviceLoginKey);
+  if fDeviceLoginKey <> '' then
+    SetLoginKey(fDeviceLoginKey);
 End;
 
 Procedure TTcpRdrBase.SetLoginKey(Const Value: String);
@@ -610,36 +612,40 @@ Var
 Begin
   iErr := 0;
   fDeviceLoginKey := Value;
-  fProtocolType := ProtocolType;
-  case fProtocolType of
-    PR0:
-      Begin
-        if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
-          EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
-        else
-         iErr := TErrors.INVALID_COMN_KEY;
-      End;
-    PR1:
-      Begin
-        if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
-          EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
-        else
-         iErr := TErrors.INVALID_COMN_KEY;
-      End;
-    PR2:
-      Begin
-        if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
+  if fDeviceLoginKey <> '' then
+  Begin
+    case fProtocolType of
+      PR0:
         Begin
-          for I := 0 to 15 do
-            fEncDeviceLoginKey[i] := KeyData[i];
-        End
-        else
-         iErr := TErrors.INVALID_COMN_KEY;
-       End;
-  end;
-  if iErr <> 0 then
-    DoLog(lgError,'SetDeviceLoginKey', ' SetDeviceLoginKey Error No : ' + IntToStr(iErr));
-    //LogError('SetDeviceLoginKey', ' SetDeviceLoginKey Error No : ' + IntToStr(iErr));
+          if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
+            EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
+          else
+           iErr := TErrors.INVALID_COMN_KEY;
+        End;
+      PR1:
+        Begin
+          if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
+            EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
+          else
+           iErr := TErrors.INVALID_COMN_KEY;
+        End;
+      PR2:
+        Begin
+          if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
+          Begin
+            for I := 0 to 15 do
+              fEncDeviceLoginKey[i] := KeyData[i];
+          End
+          else
+           iErr := TErrors.INVALID_COMN_KEY;
+         End;
+    end;
+    if iErr <> 0 then
+      DoLog(lgError,'SetDeviceLoginKey', ' SetDeviceLoginKey Error No : ' + IntToStr(iErr));
+  End
+  else
+    DoLog(lgWarning,'SetDeviceLoginKey', ' SetDeviceLoginKey Not Set ');
+
 End;
 
 Procedure TTcpRdrBase.SetConnected(Const Value: boolean);
@@ -1698,7 +1704,6 @@ Begin
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
-
   fConnected := (iErr = 0);
   if fConnected then
   Begin
@@ -1752,17 +1757,14 @@ Begin
     Begin
       if tryDisconnectIndy Then
         DoLog(lgDebug,'DisConnectIndy','Device disconnected.')
-        //LogDebug('DisConnectIndy','Device disconnected.')
       else
         DoLog(lgDebug,'DisConnectIndy','Device not disconnected.');
-        //LogDebug('DisConnectIndy','Device not disconnected.');
       fConnected := False;
     End;
   except
     on E: Exception do
     begin
       DoLog(lgError,'DisConnectIndy', 'Exception Error : ' + E.Message);
-      //LogError('DisConnectIndy', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
       fConnected := False;
     end;
@@ -1856,17 +1858,17 @@ begin
     for I := 0 to TxBuffer.u2Len-1 do
       tmpBuff[i] := TxBuffer.uaBuff[i];
     fIdTCPClient.Socket.Write(tmpBuff,TxBuffer.u2Len);
-//    if TxBuffer.u2Len = Sendlen then
       iErr := TErrors.NO_ERROR;
-  //  else
-//      iErr := TErrors.CANNOT_SEND;
   lend:
   except
     on E: Exception do
     begin
       iErr := TErrors.EXCEPTION;
       DoLog(lgError,'Send', 'Send Exception:' + E.Message);
-      //LogError('Send', 'Send Exception:' + E.Message);
+      if E is EIdConnClosedGracefully then
+      Begin
+        ReConnect;
+      End;
     end;
   end; // try
   Result := iErr;
@@ -2367,6 +2369,7 @@ Begin
         1 : rSettings.WorkingMode := wmOfflineCard;
         2 : rSettings.WorkingMode := wmTCPOnline ;
         3 : rSettings.WorkingMode := wmUDPOnline ;
+        4 : rSettings.WorkingMode := wmTCPOnlineClientMode;
       end;
       rSettings.OfflineModePermission := prBytesToBoolean(RecData,1);
       rSettings.ServerAnswerTimeOut := prBytesToLongWord(RecData,2);
@@ -2398,6 +2401,7 @@ Begin
       wmTCPOnline : SendData[0] := 2;
       wmUDPOnline : SendData[0] := 3;
       wmTCPOnlineClientMode : SendData[0] := 4;
+      wmSendSerail : SendData[0] := 5;
     end;
     ToPrBytes(rSettings.OfflineModePermission,SendData,1);
     ToPrBytes(rSettings.ServerAnswerTimeOut,SendData,2);

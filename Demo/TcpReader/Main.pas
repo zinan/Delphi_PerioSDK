@@ -12,6 +12,7 @@ uses
   Vcl.Grids, Vcl.FileCtrl, IdSocketHandle, IdBaseComponent, IdComponent,
   IdUDPBase, IdUDPServer, IdGlobal,
   Perio.Global,
+  Perio.Log,
   PerioDevice,
   PerioDevice.TCPReaderBase,
   PerioDevice.TCPReader;
@@ -653,6 +654,16 @@ type
     rbKeyTypeA: TRadioButton;
     RadioButton2: TRadioButton;
     Label142: TLabel;
+    btnGetStausMode: TButton;
+    btnSetStausMode: TButton;
+    edtStatusModeType: TSpinEdit;
+    edtStatusMode: TSpinEdit;
+    Label143: TLabel;
+    Label144: TLabel;
+    rbSendSerial: TRadioButton;
+    Button16: TButton;
+    Label145: TLabel;
+    cbPersTZMode: TComboBox;
     procedure ActionRdrConnectExecute(Sender: TObject);
     procedure RdrConnected(Sender: TObject);
     procedure RdrDisConnected(Sender: TObject);
@@ -789,6 +800,9 @@ type
     procedure Button13Click(Sender: TObject);
     procedure Button14Click(Sender: TObject);
     procedure Button15Click(Sender: TObject);
+    procedure btnGetStausModeClick(Sender: TObject);
+    procedure btnSetStausModeClick(Sender: TObject);
+    procedure Button16Click(Sender: TObject);
   private
     { Private declarations }
     OffflineMsg: array  of TMsg;
@@ -814,7 +828,7 @@ implementation
 
 uses OutOfServiceTable, BellTable, TimeConstraintTable, WeekDays, DFData, MealTable, MealRightTable,
   PriceListTable, PersonMealSettings, StaticMealRightTable, PersonMealRightList,
-  MealNameList, PersonCommands;
+  MealNameList, PersonCommands, PersonTZList;
 
 procedure TfrmMain.ActionRdrDisConnectExecute(Sender: TObject);
 begin
@@ -1316,6 +1330,7 @@ begin
       cbInputTypeChange(self);
       seInputDuration.Value := Settings.InputSettings.InputDurationTimeout;
       cbATC.Checked := Settings.TimeAccessConstraintEnabled;
+      cbPersTZMode.ItemIndex := Settings.PersonelTimeZoneMode;
       AddLog('Uygulama genel bilgileri getirildi.');
     end
     else
@@ -1443,16 +1458,21 @@ end;
 
 procedure TfrmMain.btnGetHeadClick(Sender: TObject);
 Var
+  headTail : Byte;
   Head, Tail, Capacity: LongWord;
+  deviceDate : TDateTime;
+  DoorOpen :Boolean;
+  DoorOpenDT : TDateTime;
+  DeviceStatusMode : Byte;
 begin
   if Rdr.Connected then
   Begin
-    if Rdr.GetHeadTailCapacity(Head, Tail, Capacity) then
+    if Rdr.GetRegularInfo(deviceDate,headTail,Head, Tail, Capacity,DoorOpen,DoorOpenDT,DeviceStatusMode) then
     Begin
       edtHead.Value := Head;
       edtTail.Value := Tail;
       lblCapacity.Caption := 'Kapasite : ' + IntToStr(Capacity);
-      AddLog('Head -Tail Bilgisi getirildi.');
+      AddLog('Head -Tail Bilgisi getirildi. Cihaz Saati : '+DateTimeToStr(deviceDate));
     End
     else
       AddLog('Head -Tail Bilgisi getirilemedi.');
@@ -1565,6 +1585,31 @@ begin
     else
       AddLog('Cihaz Seri Numarasý getirilemedi.');
 
+  End
+  else
+    AddLog('Cihaz Baðlantýsý Yok.');
+end;
+
+procedure TfrmMain.btnGetStausModeClick(Sender: TObject);
+Var
+  StatusMode , StatusModeType : Byte;
+begin
+  if not (rdr.fwAppType in [fwPDKS]) then
+  Begin
+    ShowMessage('Sadece PDKS fw ile çalýþýr.');
+    abort;
+  End;
+  if Rdr.Connected then
+  Begin
+
+    if Rdr.GetStatusMode(StatusMode , StatusModeType) then
+    Begin
+      edtStatusMode.Value := StatusMode;
+      edtStatusModeType.Value := StatusModeType;
+      AddLog('Status Bilgileri getirildi.');
+    End
+    else
+      AddLog('Status Bilgileri getirilemedi.');
   End
   else
     AddLog('Cihaz Baðlantýsý Yok.');
@@ -1719,6 +1764,8 @@ begin
           rbOnlineUDP.Checked := True;
         wmTCPOnlineClientMode :
           rbOnlineTCPClientMode.Checked := True;
+        wmSendSerail :
+          rbSendSerial.Checked := True;
       end;
       cmbOnlineCardWorkMode.ItemIndex := Integer(rSettings.OfflineOnlineMode);
       cbOnlineEnabledOffline.Checked := rSettings.OfflineModePermission;
@@ -2423,6 +2470,7 @@ begin
     Settings.InputSettings.InputType := cbInputType.ItemIndex;
     Settings.InputSettings.InputDurationTimeout := seInputDuration.Value;
     Settings.TimeAccessConstraintEnabled := cbATC.Checked;
+    Settings.PersonelTimeZoneMode:= cbPersTZMode.ItemIndex;
     if Rdr.SetAppGeneralSettings(Settings) then
       AddLog('Uygulama genel bilgileri gönderildi.')
     else
@@ -2695,6 +2743,27 @@ begin
     AddLog('Cihaz Baðlantýsý Yok.');
 end;
 
+procedure TfrmMain.btnSetStausModeClick(Sender: TObject);
+begin
+  if not (rdr.fwAppType in [fwPDKS]) then
+  Begin
+    ShowMessage('Sadece PDKS fw ile çalýþýr.');
+    abort;
+  End;
+  if Rdr.Connected then
+  Begin
+
+    if Rdr.SetStatusMode(edtStatusMode.Value , edtStatusModeType.Value) then
+    Begin
+      AddLog('Status Bilgileri gönderildi.');
+    End
+    else
+      AddLog('Status Bilgileri gönderilemedi.');
+  End
+  else
+    AddLog('Cihaz Baðlantýsý Yok.');
+end;
+
 procedure TfrmMain.btnSetTCPSettingsClick(Sender: TObject);
 Var
   rSettings: TTCPSettings;
@@ -2778,8 +2847,10 @@ begin
       rSettings.WorkingMode := wmTCPOnline
     else if rbOnlineUDP.Checked then
       rSettings.WorkingMode := wmUDPOnline
+    else if  rbOnlineTCPClientMode.Checked   Then
+      rSettings.WorkingMode := wmTCPOnlineClientMode
     else
-      rSettings.WorkingMode := wmTCPOnlineClientMode;
+      rSettings.WorkingMode := wmSendSerail;
 
     rSettings.OfflineModePermission := cbOnlineEnabledOffline.Checked;
     rSettings.ServerAnswerTimeOut := edtOnlineTimeOut.Value;
@@ -3079,6 +3150,16 @@ begin
   Rdr.SetBeepRelayAndSecreenMessage(0, 0, '', 'Online ', 'Test', '', '', '', '',
     5, 15, 0, 5, 35, 0, edtX3.Value, edtY3.Value, 0, edtX4.Value, edtY4.Value,
     0, edtX5.Value, edtY5.Value, 0, 2, 2, 5, 5, 0, 10, False);
+end;
+
+procedure TfrmMain.Button16Click(Sender: TObject);
+begin
+  frmPersonTZList := TfrmPersonTZList.create(self);
+  try
+    frmPersonTZList.ShowModal;
+  finally
+    frmPersonTZList.Free;
+  end;
 end;
 
 procedure TfrmMain.btnGetNodeClick(Sender: TObject);
@@ -4098,7 +4179,7 @@ Begin
   End
   Else
   Begin
-    Msgcnt := 40;
+    Msgcnt := 42;
     SetLength(OffflineMsg,Msgcnt);
     OffflineMsg[0].MsgID := 1;
     OffflineMsg[0].MsgName := 'Cihaz Açýlýþ Ekraný [1]';
@@ -4181,11 +4262,14 @@ Begin
     OffflineMsg[38].MsgName := 'Kart Bakiyesi düzeltildi.';
     OffflineMsg[39].MsgID := 82;
     OffflineMsg[39].MsgName := 'Kart Bakiyesi düzeltme hatalý.';
+    OffflineMsg[40].MsgID := 83;
+    OffflineMsg[40].MsgName := 'Acil durum Geçiþ Yetki Hatasý';
+    OffflineMsg[41].MsgID := 84;
+    OffflineMsg[41].MsgName := 'Yetki Baþlangýç tarihi hatasý';
 
     cbOffMsgType.Items.clear;
     for I := 0 to Msgcnt-1 do
       cbOffMsgType.Items.Add(OffflineMsg[i].MsgName);
-
   End;
   //
   cbHeaderType.OnChange(self);

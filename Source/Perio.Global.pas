@@ -13,7 +13,7 @@ const
   PerioNullDate = 73050;
 
 type
-  TLanguage = (langTR, langEN);
+  TLanguage = (langTR=1, langEN=2);
   TServerConnectionType = (sctClientServer, sctRestService);
   TClientRestType = (crtLocalDB,crtMemoryDB);
   TPerioApplicationType = (prWinApp,prWinService,prWinWebApp);
@@ -184,6 +184,7 @@ function IsNum(const AString: String): Boolean;overload;
 Var
   i,len : Integer;
 begin
+  Result := false;
   Len := length(AString);
   if Len>0 then
   Begin
@@ -241,10 +242,8 @@ var
   sKey : string ;
   DelimEquel,DelimDot : Integer;
   ParamDelimPos : Integer;
-  ParamDelim : string;
 Begin
   Result := '';
-  Docontinue := False;
   if ParamCount > 0 then
   Begin
     for I := 0 to ParamCount do
@@ -259,6 +258,9 @@ Begin
       else
       begin
         Docontinue :=(Param.StartsWith('/') or Param.StartsWith('--')or Param.StartsWith('-'));
+        DelimEquel := 0;
+        DelimDot := 0;
+        ParamDelimPos := 0;
         if Docontinue then
         Begin
           DelimEquel := pos('=',Param);
@@ -296,7 +298,6 @@ function isIP(Ip:String):Boolean;
   var
     position,Len,DotCnt,LastDot : Integer;
   Begin
-    DotCnt := 0;
     Len := length(IP);
     LastDot := LastDelimiter('.',IP);
     position := PosEx('.',IP,1);
