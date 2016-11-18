@@ -618,14 +618,14 @@ Begin
       PR0:
         Begin
           if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
-            EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
+            EncryptDeviceKeyX(fIP,KeyData,fEncDeviceLoginKey)
           else
            iErr := TErrors.INVALID_COMN_KEY;
         End;
       PR1:
         Begin
           if ToPrBytesFromHex(fDeviceLoginKey,KeyData,0,32) Then
-            EncryptDeviceKey(KeyData,fEncDeviceLoginKey)
+            EncryptDeviceKeyx(fIP,KeyData,fEncDeviceLoginKey)
           else
            iErr := TErrors.INVALID_COMN_KEY;
         End;
@@ -1499,6 +1499,7 @@ begin
   End;
   if AStatus in [hsDisconnected] then
     DoOnDisConnected;
+  DoLog(lgDebug,'TCPClientStatus','Status : '+AStatusText);
 end;
 
 procedure TTcpRdrBase.CheckOnlineData;
@@ -1688,7 +1689,6 @@ Begin
       if fIdTCPClient.Connected then
       begin
         fConnected := True;
-        //iErr := 0;        //Ozan emitürk
         iErr := LoginDevice
       end
       else
@@ -1730,8 +1730,28 @@ function TTcpRdrBase.tryDisconnectIndy:Boolean;
 Begin
   Result := False;
   try
-    fIdTCPClient.Disconnect;
-    Sleep(10);
+    if Assigned(fIdTCPClient.Socket) then
+    Begin
+      fIdTCPClient.Disconnect;
+      fIdTCPClient.IOHandler.InputBuffer.Clear;
+      fIdTCPClient.IOHandler.CloseGracefully;
+      fIdTCPClient.Disconnect;
+      fIdTCPClient.IOHandler.CloseGracefully;
+      fIdTCPClient.IOHandler.InputBuffer.Clear;
+      fIdTCPClient.Disconnect;
+      if fIdTCPClient.Socket.Connected then
+      Begin
+        fIdTCPClient.IOHandler.CloseGracefully;
+        fIdTCPClient.IOHandler.InputBuffer.Clear;
+        fIdTCPClient.Disconnect;
+        Sleep(500);
+        fIdTCPClient.IOHandler.CloseGracefully;
+        fIdTCPClient.IOHandler.InputBuffer.Clear;
+        fIdTCPClient.Disconnect;
+      End;
+    End
+    else
+      fIdTCPClient.Disconnect;
     if Assigned(fIdTCPClient.Socket) then
       Result := not fIdTCPClient.Socket.Connected
     else
@@ -1740,7 +1760,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tryDisconnectIndy', 'Exception Error : ' + E.Message);
-      //LogError('tryDisconnectIndy', 'Exception Error : ' + E.Message);
    end;
   end; // try
 End;
@@ -1792,7 +1811,9 @@ Begin
       end
       else
         iErr := TErrors.NOT_CREATED_TCPCOMP;
-    End;
+    End
+    else
+      iErr := TErrors.NOT_CONNECTED;
   except
     on E: Exception do
     begin
@@ -2068,8 +2089,11 @@ Begin
       rSettings.VariableClearTimeout := prBytesToWord(RecData,47);
       rSettings.DefaultScreenFontType := RecData[49];
       rSettings.CardReadDelay := RecData[50];
-      for i := 0 to 8 do
-        rSettings.RFU[i] := RecData[i+51];
+      rSettings.StatusMode := RecData[51];
+      rSettings.StatusModeType := RecData[52];
+      rSettings.Pin_BUTTON_Type := RecData[53];
+      for i := 0 to 5 do
+        rSettings.RFU[i] := RecData[i+54];
     end;
 
   except
@@ -2113,8 +2137,11 @@ Begin
     ToPrBytes(rSettings.VariableClearTimeout,SendData,47);
     ToPrBytes(rSettings.DefaultScreenFontType,SendData,49);
     ToPrBytes(rSettings.CardReadDelay,SendData,50);
-    for i := 0 to 8 do
-      SendData[i+51] := rSettings.RFU[i];
+    ToPrBytes(rSettings.StatusMode,SendData,51);
+    ToPrBytes(rSettings.StatusModeType,SendData,52);
+    ToPrBytes(rSettings.Pin_BUTTON_Type,SendData,53);
+    for i := 0 to 5 do
+      SendData[i+54] := rSettings.RFU[i];
 
     iErr := ExecuteCmd(2, // CmdNo
       3, // SubCmdNo

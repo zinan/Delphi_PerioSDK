@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils ,
   System.StrUtils ,
+  System.classes,
   System.DateUtils ;
 
 const
@@ -47,7 +48,11 @@ type
   function DateTimeToStrPerio(Value : TDateTime):string;
   function GetLanguage(iValue : string):TLanguage;
   function GetBoolean(str : string):Boolean;
+  function GetStrBoolean(ivalue : Boolean):String;
   function GetTime(str : string):TTime;
+{$IFDEF MSWINDOWS}
+  function GetThreadPriority(iValue : Integer):TThreadPriority;
+{$ENDIF}
 
 implementation
 
@@ -398,6 +403,14 @@ Begin
   Result := (UpperCase(Str)='T');
 End;
 
+function GetStrBoolean(ivalue : Boolean):String;
+Begin
+  if ivalue then
+    Result := 'T'
+  else
+    Result := 'F';
+End;
+
 function GetTime(str : string):TTime;
 Var
   tmpTime : TTime;
@@ -411,6 +424,21 @@ Begin
   Result := tmpTime;
 End;
 
-
+{$IFDEF MSWINDOWS}
+function GetThreadPriority(iValue : Integer):TThreadPriority;
+begin
+  case iValue of
+    0 : Result := tpIdle;
+    1 : Result := tpLowest;
+    2 : Result := tpLower;
+    3 : Result := tpNormal;
+    4 : Result := tpHigher;
+    5 : Result := tpHighest;
+    6 : Result := tpTimeCritical;
+    else
+      Result := tpNormal;
+  end;
+end;
+{$ENDIF}
 
 end.

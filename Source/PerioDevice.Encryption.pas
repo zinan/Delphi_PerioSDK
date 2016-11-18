@@ -20,12 +20,14 @@ unit PerioDevice.Encryption;
 ///////////////////////////////////////////////////////////////////////////
 interface
 
-uses Math,SysUtils,DateUtils,ElAES,PerioDevice;
+uses Math,SysUtils,DateUtils,ElAES,PerioDevice,System.Generics.Collections;
 
   function EncryptDeviceKey(Key:array of Byte; out EncryptedKey:array of byte):Integer;
   function PrepareLoginDataPR0(Key:array of Byte;out SessionID :word;Out LoginData:TDataByte):Integer;
   function EncryptMfrKeyData(Data:array of Byte; out EncryptedData:array of byte):Integer;
   function DecryptMfrKeyData(EncryptedData:array of Byte; out Data:array of byte):Integer;
+
+  function EncryptDeviceKeyX(IPAddress :string; Key:array of Byte; out EncryptedKey:array of byte):Integer;
 
 implementation
 
@@ -61,6 +63,47 @@ begin
   end;
   Result := iErr;
 end;
+
+function EncryptDeviceKeyX(IPAddress :string; Key:array of Byte; out EncryptedKey:array of byte):Integer;
+var
+  iErr,i:Integer;
+  expKey: TAESExpandedKey128;
+  inArray,outArray: TAESBuffer;
+  aesKey:TAESKey128;
+  Splitted : TArray<String>;
+begin
+  Splitted := IPAddress.Split(['.']);
+  aesKey[9]  := Key[0];
+  aesKey[8]  := Key[1];
+  aesKey[3]  := Key[2];
+  aesKey[7]  := Key[3];
+  aesKey[2]  := Splitted[0].ToInteger;
+  aesKey[10] := Key[5];
+  aesKey[13] := Key[6];
+  aesKey[12] := Key[7];
+  aesKey[0]  := Key[8];
+  aesKey[14] := Splitted[1].ToInteger;
+  aesKey[6]  := Key[10];
+  aesKey[4]  := Key[11];
+  aesKey[1]  := Key[12];
+  aesKey[15] := Key[13];
+  aesKey[11] := Splitted[3].ToInteger;
+  aesKey[5]  := Key[15];
+
+  iErr := 0;
+  try
+    for i := 0 to Length(Key)-1 do
+      inArray[i]:=Key[i];
+    ExpandAESKeyForEncryption(aeskey,expKey);
+    EncryptAES(inArray,expKey,outArray);
+    for i := 0 to Length(outArray)-1 do
+      EncryptedKey[i]:=outArray[i];
+  except
+    iErr := -1;
+  end;
+  Result := iErr;
+end;
+
 
 function EncryptMfrKeyData(Data:array of Byte; out EncryptedData:array of byte):Integer;
 var

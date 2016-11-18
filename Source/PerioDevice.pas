@@ -3,7 +3,7 @@ unit PerioDevice;
 interface
 
 uses
-  Classes,Sysutils,DateUtils,StrUtils,Perio.Global;
+  Classes,Sysutils,DateUtils,StrUtils,Perio.Global,System.Generics.Collections;
 
 const
   /// GLOBAL CONTANTS
@@ -210,7 +210,10 @@ type
     VariableClearTimeout : word;
     DefaultScreenFontType : byte;
     CardReadDelay : Byte;//Ms
-    RFU : array [0 .. 8] of byte;
+    StatusMode :Byte;
+    StatusModeType :Byte;
+    Pin_BUTTON_Type : Byte;
+    RFU : array [0 .. 5] of byte;
   end;
 
   TWorkingMode = (wmOffline,wmOfflineCard,wmTCPOnline,wmUDPOnline,wmTCPOnlineClientMode,wmSendSerail);
@@ -483,7 +486,7 @@ type
   TSmackVerificationMode = (smFPorCardorPWD=0,smFPandCard=1,smFPandPWD=2,smCardandPWD=3 ,smFPandCardandPWD = 4,smNone5 =5,smFP =6 ,smCard = 7,smNone8,smIDandWD = 9,smNone10,smFACE =11,smFACEandCard = 12,smFACEandPWD = 13,smFaceandCardandPWD = 14,smFaceandFP =15);
   TSmackModeOfControllingDoor = (smUnconditionalClose=0,smUnconditionalOpen=1,smAuto=2);
   TSmackDoorSensorType =(smNone=0,smAlwaysOpen=1,smAlwaysClose=2);
-  TSmackMachinePrivilege = (smEmployee,smAdministrator,smEnrollmentManager,smSetupManager);
+    TSmackMachinePrivilege = (smEmployee = 0,smAdministrator = 1,smEnrollmentManager = 2,smSetupManager = 3);
   TSmackSerialBaudRate = (br9600=3, br19200=4, br38400=5,br57600=6 ,br115200=7);
   TSmackSerialParityCheck = (NoMakingParityCheck = 0, EvenCheck =1, OddCheck=2);
   TSmackSerialStopBit = (StopBit1 = 0 , StopBit2=1);
@@ -770,7 +773,9 @@ type
     OpendoorType  : THanvonOpenDoorType;
     Password      : string;
     Photo         : WideString;
-    FaceData      : array [0..18] of string;
+    FaceData      : TList<string>;
+    constructor Create(AOwner: TComponent);
+
   end;
 
   THanvonRecord  = record
@@ -1511,6 +1516,14 @@ begin
   RestLen := Len - Length(s);
   if RestLen < 1 then Exit;
   Result := StringOfChar(Ch, RestLen) + S;
+end;
+
+{ THanvonPerson }
+
+constructor THanvonPerson.Create(AOwner: TComponent);
+begin
+  inherited;
+  FaceData:=TList<string>.Create;
 end;
 
 end.

@@ -2,8 +2,8 @@
   Left = 0
   Top = 0
   Caption = 'Perio TCP Reader (PDKS - EKS,HGS,YMK fw.) Demo 3.0'
-  ClientHeight = 614
-  ClientWidth = 987
+  ClientHeight = 619
+  ClientWidth = 1100
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,25 +18,28 @@
   object pnlMainLeft: TPanel
     Left = 675
     Top = 0
-    Width = 312
-    Height = 614
+    Width = 425
+    Height = 619
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitHeight = 773
     object pgLog: TPageControl
       Left = 0
       Top = 0
-      Width = 312
-      Height = 614
-      ActivePage = TabUDPLog
+      Width = 425
+      Height = 619
+      ActivePage = TabAppLog
       Align = alClient
       TabOrder = 0
+      ExplicitHeight = 773
       object TabAppLog: TTabSheet
         Caption = 'Uygulama Loglar'#305
+        ExplicitHeight = 745
         object pnlLeftTop: TPanel
           Left = 0
           Top = 0
-          Width = 304
+          Width = 417
           Height = 41
           Align = alTop
           BevelInner = bvLowered
@@ -61,20 +64,22 @@
         object mmLog: TMemo
           Left = 0
           Top = 41
-          Width = 304
-          Height = 545
+          Width = 417
+          Height = 550
           Align = alClient
           ReadOnly = True
           TabOrder = 1
+          ExplicitHeight = 704
         end
       end
       object TabUDPLog: TTabSheet
         Caption = 'Cihaz UDP Loglar'#305
         ImageIndex = 1
+        ExplicitHeight = 745
         object Panel3: TPanel
           Left = 0
           Top = 0
-          Width = 304
+          Width = 417
           Height = 41
           Align = alTop
           BevelInner = bvLowered
@@ -114,15 +119,24 @@
             TabOrder = 1
             OnClick = btnUDPLogClearClick
           end
+          object chkDeviceTesting: TCheckBox
+            Left = 296
+            Top = 8
+            Width = 105
+            Height = 17
+            Caption = 'Cihaz Testi Yap'
+            TabOrder = 3
+          end
         end
         object mmUDPLog: TMemo
           Left = 0
           Top = 41
-          Width = 304
-          Height = 545
+          Width = 417
+          Height = 550
           Align = alClient
           ReadOnly = True
           TabOrder = 1
+          ExplicitHeight = 704
         end
       end
     end
@@ -131,10 +145,11 @@
     Left = 0
     Top = 0
     Width = 675
-    Height = 614
+    Height = 619
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 773
     object pnlConnectReader: TPanel
       Left = 0
       Top = 0
@@ -360,12 +375,14 @@
       Left = 0
       Top = 89
       Width = 675
-      Height = 525
-      ActivePage = tsAccessSettings
+      Height = 530
+      ActivePage = tsDeviceSettings
       Align = alClient
       TabOrder = 1
+      ExplicitHeight = 684
       object tsDeviceSettings: TTabSheet
         Caption = 'Cihaz Genel Ayarlar'#305
+        ExplicitHeight = 656
         object gbDeviceİnfo: TGroupBox
           Left = 0
           Top = 0
@@ -588,7 +605,7 @@
           Left = 183
           Top = 0
           Width = 273
-          Height = 405
+          Height = 435
           Caption = ' Cihaz Genel Ayarlar'#305' '
           TabOrder = 1
           object lblText1: TLabel
@@ -710,6 +727,13 @@
             Width = 122
             Height = 13
             Caption = 'Kart Login Bekleme S'#252'resi'
+          end
+          object Label148: TLabel
+            Left = 9
+            Top = 386
+            Width = 101
+            Height = 13
+            Caption = 'Art 63 Yandaki Buton'
           end
           object edtText1: TEdit
             Left = 60
@@ -866,7 +890,7 @@
           end
           object btnGetDeviceGeneralSettings: TButton
             Left = 0
-            Top = 382
+            Top = 410
             Width = 65
             Height = 20
             Caption = 'Getir'
@@ -875,7 +899,7 @@
           end
           object btnSetDeviceGeneralSettings: TButton
             Left = 73
-            Top = 382
+            Top = 410
             Width = 65
             Height = 20
             Caption = 'G'#246'nder'
@@ -925,6 +949,20 @@
             MinValue = 0
             TabOrder = 15
             Value = 0
+          end
+          object cbReadPinType: TComboBox
+            Left = 116
+            Top = 383
+            Width = 136
+            Height = 21
+            Style = csDropDownList
+            ItemIndex = 0
+            TabOrder = 18
+            Text = 'DHCP On/Of Reboot'
+            Items.Strings = (
+              'DHCP On/Of Reboot'
+              'Cihaz Ayarlar'#305
+              'Reboot')
           end
         end
         object grDeviceWorkMode: TGroupBox
@@ -1210,7 +1248,7 @@
         end
         object btnweekDays: TButton
           Left = 186
-          Top = 411
+          Top = 436
           Width = 111
           Height = 25
           Caption = 'Hafta G'#252'n '#304'simleri'
@@ -1221,6 +1259,7 @@
       object tsCominicationSettings: TTabSheet
         Caption = 'Haberle'#351'me Ayarlar'#305
         ImageIndex = 1
+        ExplicitHeight = 656
         object grIpSettings: TGroupBox
           Left = 1
           Top = 2
@@ -1647,11 +1686,12 @@
       object tsMfrKeyTable: TTabSheet
         Caption = 'Mifare '#350'ifre Tablosu'
         ImageIndex = 2
+        ExplicitHeight = 540
         object grdMfrKeyList: TStringGrid
           Left = 0
           Top = 0
           Width = 321
-          Height = 497
+          Height = 502
           Align = alLeft
           BevelInner = bvNone
           BevelKind = bkFlat
@@ -1663,6 +1703,7 @@
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
           ParentCtl3D = False
           TabOrder = 0
+          ExplicitHeight = 540
           ColWidths = (
             30
             129
@@ -1717,16 +1758,19 @@
       object tsLCDMessages: TTabSheet
         Caption = 'Ekran Mesajlar'#305
         ImageIndex = 3
+        ExplicitHeight = 656
         object PageControl1: TPageControl
           Left = 0
           Top = 0
           Width = 667
-          Height = 497
+          Height = 502
           ActivePage = TabSheet2
           Align = alClient
           TabOrder = 0
+          ExplicitHeight = 656
           object TabSheet1: TTabSheet
             Caption = 'Online'
+            ExplicitHeight = 628
             object GroupBox8: TGroupBox
               Left = 0
               Top = 8
@@ -2432,6 +2476,7 @@
           object TabSheet2: TTabSheet
             Caption = 'Offline'
             ImageIndex = 1
+            ExplicitHeight = 628
             object GroupBox3: TGroupBox
               Left = 3
               Top = 3
@@ -2897,6 +2942,7 @@
       object tsAccessSettings: TTabSheet
         Caption = 'Uygulama Ayarlar'#305
         ImageIndex = 4
+        ExplicitHeight = 656
         object Label143: TLabel
           Left = 16
           Top = 394
@@ -3521,6 +3567,7 @@
       object tsAddWhitelist: TTabSheet
         Caption = 'Ki'#351'i Ekleme'
         ImageIndex = 5
+        ExplicitHeight = 656
         object lblCardId: TLabel
           Left = 7
           Top = 21
@@ -3829,14 +3876,112 @@
           Top = 166
           Width = 93
           Height = 21
-          Date = 73050.416025474540000000
-          Time = 73050.416025474540000000
+          Date = 42369.416025474540000000
+          Time = 42369.416025474540000000
           TabOrder = 8
+        end
+        object GroupBox11: TGroupBox
+          Left = 0
+          Top = 259
+          Width = 667
+          Height = 243
+          Align = alBottom
+          Caption = 'Toplu Aktar'#305'm Testi'
+          TabOrder = 20
+          ExplicitTop = 413
+          object Label146: TLabel
+            Left = 16
+            Top = 24
+            Width = 60
+            Height = 13
+            Caption = 'Kart Say'#305's'#305' : '
+          end
+          object lblCardStatus: TLabel
+            Left = 255
+            Top = 22
+            Width = 67
+            Height = 13
+            Caption = 'Kart Durumu :'
+          end
+          object Label147: TLabel
+            Left = 208
+            Top = 22
+            Width = 41
+            Height = 13
+            Caption = 'Durum : '
+          end
+          object Button17: TButton
+            Left = 15
+            Top = 46
+            Width = 187
+            Height = 48
+            Caption = 'Teste Ba'#351'la'
+            TabOrder = 0
+            OnClick = Button17Click
+          end
+          object nmrCardValue: TSpinEdit
+            Left = 128
+            Top = 18
+            Width = 74
+            Height = 22
+            MaxValue = 0
+            MinValue = 0
+            TabOrder = 1
+            Value = 100
+          end
+          object lstErrorList: TListBox
+            Left = 479
+            Top = 15
+            Width = 186
+            Height = 226
+            Align = alRight
+            Enabled = False
+            ItemHeight = 13
+            Items.Strings = (
+              'GetDelNodeFromE2P'
+              'GetDelNodeFromE2P okuma hatasi '
+              'GetDelNodeFromNwram'
+              'GetDelNodeFromNwram okuma hatasi '
+              'GetDelNodeFromSD'
+              'GetDelRootFromE2P'
+              'GetDelRootFromE2P okuma hatasi '
+              'GetDelRootFromNVRAM'
+              'GetDelRootFromNVRAM okuma hatasi '
+              'GetDelRootFromSD okuma hatasi'
+              'GetInsNodeFromE2P'
+              'GetInsNodeFromE2P okuma hatasi '
+              'GetInsNodeFromNwram'
+              'GetInsNodeFromNwram okuma hatasi '
+              'GetInsNodeFromSD'
+              'GetInsNodeFromSD'
+              'GetInsRootFromE2P'
+              'GetInsRootFromE2P okuma hatasi '
+              'GetInsRootFromNVRAM okuma hatasi '
+              'GetInsRootFromSD'
+              'GetPersCntFromE2P okuma hatasi'
+              'GetPersCntFromE2P okuma hatasi '
+              'GetPersCntFromNVRAM okuma hatasi'
+              'GetPersCntFromNVRAM okuma hatasi '
+              'GetPersCntFromSD okuma hatasi'
+              'Node Okuma Hatasi'
+              'Node Okuma Hatasi'
+              'Node Okuma Hatasi'
+              'ReadNodeFromDF'
+              'ReadNodeFromDF'
+              'ReadNodeFromDF'
+              'ReadNodeFromDFWithoutNvram'
+              'ReadNodeFromDFWithoutNvram'
+              'ReadNodeFromDFWithoutNvram'
+              'WriteNodeToDF')
+            Sorted = True
+            TabOrder = 2
+          end
         end
       end
       object tsInOutValues: TTabSheet
         Caption = 'Giri'#351' '#199#305'k'#305#351' Bilgileri'
         ImageIndex = 6
+        ExplicitHeight = 540
         object grpCihazGirisCikis: TGroupBox
           Left = 17
           Top = 18
@@ -3928,12 +4073,13 @@
         end
         object mmFile: TMemo
           Left = 0
-          Top = 246
+          Top = 251
           Width = 667
           Height = 251
           Align = alBottom
           ScrollBars = ssVertical
           TabOrder = 2
+          ExplicitTop = 289
         end
         object GroupBox9: TGroupBox
           Left = 452
@@ -3981,6 +4127,7 @@
       object tsDataFlash: TTabSheet
         Caption = 'Read - Write Block Data'
         ImageIndex = 7
+        ExplicitHeight = 656
         object Panel4: TPanel
           Left = 0
           Top = 0
@@ -4097,16 +4244,18 @@
           Left = 0
           Top = 71
           Width = 667
-          Height = 426
+          Height = 431
           Align = alClient
           ItemHeight = 13
           TabOrder = 1
           OnDblClick = mmdfDblClick
+          ExplicitHeight = 585
         end
       end
       object tsHGSSettings: TTabSheet
         Caption = 'HGS Ayarlar'#305' - Tag Ekleme'
         ImageIndex = 8
+        ExplicitHeight = 656
         object Label74: TLabel
           Left = 254
           Top = 22
@@ -4805,9 +4954,13 @@
       object tsHGSInOutValues: TTabSheet
         Caption = 'HGS Giri'#351' '#199#305'k'#305#351' Bilgileri'
         ImageIndex = 9
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object mmHGSFile: TMemo
           Left = 0
-          Top = 246
+          Top = 405
           Width = 667
           Height = 251
           Align = alBottom
@@ -4907,6 +5060,7 @@
       object tsYMKSettings: TTabSheet
         Caption = 'YemekHane - Kont'#246'r Ayarlar'#305
         ImageIndex = 10
+        ExplicitHeight = 656
         object GroupBox6: TGroupBox
           Left = 3
           Top = 6
@@ -5106,6 +5260,10 @@
       object TabSheet3: TTabSheet
         Caption = 'Black List'
         ImageIndex = 11
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label119: TLabel
           Left = 15
           Top = 29
@@ -5225,6 +5383,10 @@
       object TabSheet4: TTabSheet
         Caption = 'Get / Set Node'
         ImageIndex = 12
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label102: TLabel
           Left = 15
           Top = 58
@@ -5347,6 +5509,10 @@
       object TabSheet5: TTabSheet
         Caption = 'Mifare Card Read Write'
         ImageIndex = 13
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label139: TLabel
           Left = 18
           Top = 14

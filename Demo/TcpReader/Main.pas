@@ -8,11 +8,12 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls,
   Vcl.ComCtrls, Vcl.Samples.Spin,
   System.Actions, Vcl.ActnList,
+  generics.collections,
   DateUtils,
   Vcl.Grids, Vcl.FileCtrl, IdSocketHandle, IdBaseComponent, IdComponent,
   IdUDPBase, IdUDPServer, IdGlobal,
+  strutils,
   Perio.Global,
-  Perio.Log,
   PerioDevice,
   PerioDevice.TCPReaderBase,
   PerioDevice.TCPReader;
@@ -664,6 +665,16 @@ type
     Button16: TButton;
     Label145: TLabel;
     cbPersTZMode: TComboBox;
+    GroupBox11: TGroupBox;
+    Button17: TButton;
+    Label146: TLabel;
+    nmrCardValue: TSpinEdit;
+    lblCardStatus: TLabel;
+    Label147: TLabel;
+    lstErrorList: TListBox;
+    chkDeviceTesting: TCheckBox;
+    Label148: TLabel;
+    cbReadPinType: TComboBox;
     procedure ActionRdrConnectExecute(Sender: TObject);
     procedure RdrConnected(Sender: TObject);
     procedure RdrDisConnected(Sender: TObject);
@@ -803,6 +814,7 @@ type
     procedure btnGetStausModeClick(Sender: TObject);
     procedure btnSetStausModeClick(Sender: TObject);
     procedure Button16Click(Sender: TObject);
+    procedure Button17Click(Sender: TObject);
   private
     { Private declarations }
     OffflineMsg: array  of TMsg;
@@ -821,6 +833,7 @@ type
 
 var
   frmMain: TfrmMain;
+  deviceTestingError:boolean = false;
 
 implementation
 
@@ -1061,8 +1074,8 @@ begin
       case iErr of
         0:
           Begin
-            AddLog('Kiþi eklendi.');
             lblIndexNo.Caption := IntToStr(InxNm);
+            AddLog(edtCardID.Text +' kiþi eklendi');
           End;
         1:
           AddLog('Daha önce eklenmiþ.');
@@ -1180,7 +1193,7 @@ begin
     begin
       if Rdr.DeleteWhitelistWithCardID(CardID, InxNm) = 0 Then
       Begin
-        AddLog('Kiþi silindi.');
+        AddLog( edtCardID.Text +  ' Kiþi silindi.');
         lblIndexNo.Caption := IntToStr(InxNm);
       End
       else
@@ -1409,6 +1422,7 @@ begin
       edtVariableClearTimeout.Value := rSettings.VariableClearTimeout;
       cbDefSecreenMsgFontType.ItemIndex := rSettings.DefaultScreenFontType;
       edtCardReadDelay.Value := rSettings.CardReadDelay;
+      cbReadPinType.ItemIndex := rSettings.Pin_BUTTON_Type;
       AddLog('Cihaz genel bilgileri getirildi..');
     End
     else
@@ -2574,6 +2588,7 @@ begin
     rSettings.VariableClearTimeout := edtVariableClearTimeout.Value;
     rSettings.DefaultScreenFontType:= cbDefSecreenMsgFontType.ItemIndex;
     rSettings.CardReadDelay := edtCardReadDelay.Value;
+    rSettings.Pin_BUTTON_Type := cbReadPinType.ItemIndex;
     if Rdr.SetDeviceGeneralSettings(rSettings) then
       AddLog('Cihaz genel bilgileri gönderildi..')
     else
@@ -3160,6 +3175,48 @@ begin
   finally
     frmPersonTZList.Free;
   end;
+end;
+
+procedure TfrmMain.Button17Click(Sender: TObject);
+var
+strRandomCardId:string;
+I: Integer;
+rnd:Integer;
+
+  procedure createRandomCardId();
+  begin
+    Randomize;
+    strRandomCardId:='C4E3B82E'+random( (100000) + 899999 ).ToString();
+  end;
+
+begin
+  chkDeviceTesting.Checked:=true;
+  pgLog.ActivePageIndex:=0;
+  btnLogUDPStart.Click;
+  mmUDPLog.Lines.Clear;
+
+  for I := 0 to nmrCardValue.Value -1 do
+  begin
+
+    createRandomCardId();
+    edtCardID.Text:=strRandomCardId;
+    btnAddWhiteList.Click;
+    Sleep(2);
+
+     Randomize;
+     rnd:=Random(2);
+
+     if (i mod 2 = 0) and (rnd mod 2 = 0) then
+      btnDeleteWhiteList.Click;
+
+    if deviceTestingError then
+    begin
+    ShowMessage('Cihazý kontrol etmeniz önerilir. ');
+    Break;
+    end;
+
+  end;
+
 end;
 
 procedure TfrmMain.btnGetNodeClick(Sender: TObject);
@@ -4334,6 +4391,17 @@ begin
   str := BytesToString(AData);
   mmUDPLog.Lines.Add(DateTimeToStr(now)+' > '+str);
   //PerioLog.LogDebug('UDP_Log_' + ABinding.PeerIP, str);
+
+  if chkDeviceTesting.Checked then
+  begin
+
+   if lstErrorList.Items.IndexOf(str) > -1 then
+   begin
+    deviceTestingError:=true;
+   end;
+
+  end;
+
 end;
 procedure TfrmMain.mmdfDblClick(Sender: TObject);
 begin

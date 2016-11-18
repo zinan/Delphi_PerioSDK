@@ -804,12 +804,19 @@ Begin
       ToPrBytes(rPerson.isOnlineCard,SendData,39);
       ToPrBytes(rPerson.PermitedInEmergency,SendData,40);
       ToPrBytes(rPerson.BirthDate,SendData,41);
-
-      ToPrBytes(rPerson.WeeklyTotalMealCount ,SendData,44);
-      ToPrBytes(rPerson.MonthlyTotalMealCount ,SendData,45);
-      ToPrBytes(rPerson.MealSettingListNo ,SendData,46);
-      ToPrBytes(rPerson.BlackListCmdNo,SendData,47);
-      ToPrBytes(rPerson.NeedCmdControl,SendData,48);
+      if ffwAppType = fwYMK then
+      begin
+        ToPrBytes(rPerson.WeeklyTotalMealCount ,SendData,44);
+        ToPrBytes(rPerson.MonthlyTotalMealCount ,SendData,45);
+        ToPrBytes(rPerson.MealSettingListNo ,SendData,46);
+        ToPrBytes(rPerson.BlackListCmdNo,SendData,47);
+        ToPrBytes(rPerson.NeedCmdControl,SendData,48);
+      end
+      else
+      Begin
+        ToPrBytes(rPerson.BlackListCmdNo,SendData,44);
+        ToPrBytes(rPerson.NeedCmdControl,SendData,45);
+      End;
       for I := 49 to 51 do
         SendData[i] := 0;
       iErr := ExecuteCmd(3, // CmdNo
@@ -924,12 +931,19 @@ Begin
     ToPrBytes(rPerson.isOnlineCard,SendData,39);
     ToPrBytes(rPerson.PermitedInEmergency,SendData,40);
     ToPrBytes(rPerson.BirthDate,SendData,41);
-
-    ToPrBytes(rPerson.WeeklyTotalMealCount ,SendData,44);
-    ToPrBytes(rPerson.MonthlyTotalMealCount ,SendData,45);
-    ToPrBytes(rPerson.MealSettingListNo ,SendData,46);
-    ToPrBytes(rPerson.BlackListCmdNo,SendData,47);
-    ToPrBytes(rPerson.NeedCmdControl,SendData,48);
+    if ffwAppType = fwYMK then
+    begin
+      ToPrBytes(rPerson.WeeklyTotalMealCount ,SendData,44);
+      ToPrBytes(rPerson.MonthlyTotalMealCount ,SendData,45);
+      ToPrBytes(rPerson.MealSettingListNo ,SendData,46);
+      ToPrBytes(rPerson.BlackListCmdNo,SendData,47);
+      ToPrBytes(rPerson.NeedCmdControl,SendData,48);
+    end
+    else
+    Begin
+      ToPrBytes(rPerson.BlackListCmdNo,SendData,44);
+      ToPrBytes(rPerson.NeedCmdControl,SendData,45);
+    End;
     for I := 49 to 51 do
       SendData[i] := 0;
 
