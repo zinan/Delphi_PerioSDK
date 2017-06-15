@@ -14,6 +14,7 @@ uses
   IdUDPBase, IdUDPServer, IdGlobal,
   strutils,
   Perio.Global,
+  //Perio.Log,
   PerioDevice,
   PerioDevice.TCPReaderBase,
   PerioDevice.TCPReader;
@@ -675,6 +676,8 @@ type
     chkDeviceTesting: TCheckBox;
     Label148: TLabel;
     cbReadPinType: TComboBox;
+    Label149: TLabel;
+    edtReadTimeOut: TSpinEdit;
     procedure ActionRdrConnectExecute(Sender: TObject);
     procedure RdrConnected(Sender: TObject);
     procedure RdrDisConnected(Sender: TObject);
@@ -4846,10 +4849,13 @@ begin
     Rdr.IP := edtConnectIp.Text;
     Rdr.Port := edtConnectPortNo.Text;
     Rdr.TimeOut := edtConnectTimeOut.Value;
+    Rdr.ReadTimeOut := edtReadTimeOut.Value;
     Rdr.DeviceLoginKey := edtConnectKey.Text;
     Rdr.CommandRetry := edtConnectCmdRtry.Value;
     Rdr.AutoConnect := cbConnectAutoConnect.Checked;
     Rdr.AutoRxEnabled := cbConnectAutoRxEnabled.Checked;
+
+
     //Rdr.ConnectionAliveEnabled := Rdr.AutoRxEnabled;
     Rdr.Connect;
     if Rdr.Connected then

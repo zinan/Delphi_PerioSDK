@@ -482,15 +482,13 @@ type
   end;
   //  Smack Parmak Ýzi Cihazý Ýle ilgili
   TFpReaderType = (SmackFP,SmackFaceAndFP);
-
   TSmackVerificationMode = (smFPorCardorPWD=0,smFPandCard=1,smFPandPWD=2,smCardandPWD=3 ,smFPandCardandPWD = 4,smNone5 =5,smFP =6 ,smCard = 7,smNone8,smIDandWD = 9,smNone10,smFACE =11,smFACEandCard = 12,smFACEandPWD = 13,smFaceandCardandPWD = 14,smFaceandFP =15);
   TSmackModeOfControllingDoor = (smUnconditionalClose=0,smUnconditionalOpen=1,smAuto=2);
   TSmackDoorSensorType =(smNone=0,smAlwaysOpen=1,smAlwaysClose=2);
-    TSmackMachinePrivilege = (smEmployee = 0,smAdministrator = 1,smEnrollmentManager = 2,smSetupManager = 3);
+  TSmackMachinePrivilege = (smEmployee = 0,smAdministrator = 1,smEnrollmentManager = 2,smSetupManager = 3);
   TSmackSerialBaudRate = (br9600=3, br19200=4, br38400=5,br57600=6 ,br115200=7);
   TSmackSerialParityCheck = (NoMakingParityCheck = 0, EvenCheck =1, OddCheck=2);
   TSmackSerialStopBit = (StopBit1 = 0 , StopBit2=1);
-
 
   TSmackDeviceStatus = record
     NumberOfManagers        : Integer;
@@ -535,7 +533,6 @@ type
     BackupNumber    : Array[0..9] of Boolean;
     FingerTemplate  : Array[0..9] of Ansistring;
   End;
-
 
   TSmackPerson = record
     UserID : Integer; //
@@ -585,6 +582,478 @@ type
   end;
 
   //  Smack Parmak Ýzi Cihazý Ýle ilgili
+
+
+  //CMR10 cihazý ile ilgili baþlangýç
+
+  type TCMRDoorStatus = (dsClose=1, dsOpen=2, dsHClose=3, dsHOpen=4, dsInvasion=4, dsFire=6, dsExit=7);
+
+  type TCMRConstants = record
+
+  public const FP_SIZE_COM        : integer = (1404 + 12);
+  //public const ENROLL_DATA_SIZE   : integer = (4 * 8 + FP_SIZE_COM * 2);
+  public const ENROLL_DATA_SIZE   : integer = (4 * 8 + (1404 + 12) * 2);
+  public const PHOTO_SIZE         : integer = 8192;
+  public const USER_INFO_SIZE     : integer = 20;
+  public const GLOG_BY_ID         : integer = $1;
+  public const GLOG_BY_CD         : integer = $2;
+  public const GLOG_BY_FP         : integer = $4;
+  public const GLOG_BY_DURESS_BIT : integer = $8;
+  public const GLOG_BY_LIMITTIME  : integer = $10;
+  public const GLOG_BY_ANTIPASS   : integer = $20;
+  public const GLOG_BY_TIMEZONE   : integer = $40;
+  public const GLOG_BY_AREA       : integer = $80;
+
+  public const COMPANY_NAME_FONT_BOLD   : integer = 2;
+  public const COMPANY_NAME_FONT_ITALIC : integer = 1;
+  public const DB_HOLIDAY_SIZE          : integer = 16;
+  public const DB_HOLIDAY_MAX           : integer = 256;
+
+  public const DB_TZONE_SIZE : integer = 24;
+  public const DB_TZONE_MAX  : integer = 2048;
+
+  public const DMASK_HOL : integer = $1;
+  public const DMASK_SUN : integer = $2;
+  public const DMASK_MON : integer = $4;
+  public const DMASK_TUE : integer = $8;
+  public const DMASK_WED : integer = $10;
+  public const DMASK_THU : integer = $20;
+  public const DMASK_FRI : integer = $40;
+  public const DMASK_SAT : integer = $80;
+  public const DMASK_ALL : integer = $FF;
+
+  public const DB_DAYLIGHT_SIZE : integer = 24;
+  public const DB_DAYLIGHT_MAX  : integer = 4;
+
+  public const DB_TMODE_SIZE : integer = 28;
+  public const DB_TMODE_MAX  : integer = 10;
+
+  public const DB_BELLTIME_SIZE : integer = 20;
+  public const DB_BELLTIME_MAX  : integer = 20;
+
+  public const DB_AUTODOOR_SIZE : integer = 24;
+  public const DB_AUTODOOR_MAX  : integer = 6;
+
+  public const DB_AUTOKEY_SIZE  : integer = 28;
+  public const DB_AUTOKEY_MAX   : integer = 5;
+
+  public const DB_NOACTKEY_SIZE : integer = 16;
+
+        // VoIP Related declares
+  public const VS_NONE          : integer = 0;
+  public const VS_CLOSED        : integer = 1;
+  public const VS_RINGING       : integer = 2;
+  public const VS_OPENED        : integer = 3;
+  public const VOIP_IMAGE_WIDTH : integer = 320;
+  public const VOIP_IMAGE_HEIGHT: integer = 240;
+  public const PHONE_COUNT      : integer = 100;
+
+end;
+
+  type CMRUtil = class
+
+    public
+    function pubIPAddrToLong(iIpAddress: string) : integer;
+    function pubLongToIPAddr(iValue: Cardinal) : string;
+
+  end;
+
+  type TCMRUserInfo = record
+   dwTzone1 : integer;
+   dwTzone2 : integer;
+   dwAccessMode : integer;
+   dwLimitTime : integer;
+  end;
+
+  type TSuperLogData = record
+   EnrollNumber : integer;
+   Device       : integer;
+   Manipulation : integer;
+   Date         : TDateTime;
+  end;
+
+  type TGeneralLogData = record
+   EnrollNumber : integer;
+   Granted      : integer;//0-Access denied 1-Access granted
+   Method       : integer;//verify mode
+   DoorMode     : integer;
+   FunNumber    : integer;
+   Sensor       : integer; //In the state of being open the door when verified, 0-close, 1-open:
+   Date         : TDateTime;
+  end;
+
+  type TCMRDeviceStatus = record
+    UserCount     : integer;
+    ManagerCount  : integer;
+    FpCount       : integer;
+    CardCount     : integer;
+    SLogTotal     : integer;
+    SLogRead      : integer;
+    GLogTotal     : integer;
+    GLogRead      : integer;
+    CurDoorMode   : integer;
+  end;
+
+  type TCMRDeviceInfo = record
+    DoorRelay     : integer;
+    DoorMode      : integer;
+    DoorTime      : integer;
+    DoorAlarm     : integer;
+    CdType        : integer;
+    ReAccess      : integer;
+    Cd2Fun        : integer;
+    AlmRelayFun   : integer;
+    AlmBuzzFun    : integer;
+    AntiPass      : integer;
+    Fire          : integer;
+    IdSecret      : integer;
+    Limit         : integer;
+    Language      : integer;
+    VoiceOut      : integer;
+    MachineID     : integer;
+    Baudrate      : TSmackSerialBaudRate;
+  end;
+
+  type TDayMaskSetting = class
+    private
+    fDMask : integer;
+    property DMask : integer read fDMask write fDMask;
+  end;
+
+  type TUiDayMaskSetting = class
+
+   private
+    fsetting  : TDayMaskSetting;
+    fHoliday  : boolean;
+    fMonday   : boolean;
+    fTuesDay  : boolean;
+    fWendsDay : boolean;
+    fThursDay : boolean;
+    fFriday   : boolean;
+    fSaturday : boolean;
+    fSunday   : boolean;
+
+    procedure SetHoliday(value : boolean);
+    procedure SetMonday(value : boolean);
+    procedure SetTuesDay(value : boolean);
+    procedure SetWendsDay(value : boolean);
+    procedure SetThursDay(value : boolean);
+    procedure SetFriday(value : boolean);
+    procedure SetSaturday(value : boolean);
+    procedure SetSunday(value : boolean);
+
+    function GetHoliday    : boolean;
+    function GetMonday     : boolean;
+    function GetTuesDay    : boolean;
+    function GetWendsDay   : boolean;
+    function GetThursDay   : boolean;
+    function GetFriday     : boolean;
+    function GetSaturday   : boolean;
+    function GetSunday     : boolean;
+
+
+   public
+   constructor create(setting : TDayMaskSetting);
+   destructor Destroy; override;
+
+
+   property Holiday  : boolean read GetHoliday  write SetHoliday;
+   property Monday   : boolean read GetMonday   write SetMonday;
+   property TuesDay  : boolean read GetTuesDay  write SetTuesDay;
+   property WendsDay : boolean read GetWendsDay write SetWendsDay;
+   property ThursDay : boolean read GetThursDay write SetThursDay;
+   property Friday   : boolean read GetFriday   write SetFriday;
+   property Saturday : boolean read GetSaturday write SetSaturday;
+   property Sunday   : boolean read GetSunday   write SetSunday;
+
+  end;
+
+  type TAutoDoor = class(TDayMaskSetting)
+
+     private
+     fValid : integer ;// 0-Invalid, 1-Valid
+     fSHour : integer ;// 0-23-Start Hour
+     fSMin  : integer ;// 0-59-Start Minute
+     fEHour : integer ;// 0-23-End Hour
+     fEMin  : integer ;// 0-59-End Minute
+
+     public
+     function GetFromStream(stream : TStream) : TAutoDoor;
+     procedure Serialize(stream : TStream);
+
+     property Valid : integer read fValid write fValid;
+     property SHour : integer read fSHour write fSHour;
+     property SMin  : integer read fSMin  write fSMin;
+     property EHour : integer read fEHour write fEHour;
+     property EMin  : integer read fEMin  write fEMin;
+
+  end;
+
+  type TUiAutoDoor = class(TUiDayMaskSetting)
+
+    private
+    function GetValid : boolean;
+    function GetStartHour : integer;
+    function GetStartMinute : integer;
+    function GetEndHour : integer;
+    function GetEndMinute : integer;
+    procedure SetValid(value : Boolean);
+    procedure SetStartHour(value : integer);
+    procedure SetStartMinute(value : integer);
+    procedure SetEndHour(value : integer);
+    procedure SetEndMinute(value : integer);
+
+    public
+    fAutoDoor     : TAutoDoor;
+    fNo           : integer;
+
+    fValid        : boolean;
+    fStartHour    : integer;
+    fStartMinute  : integer;
+    fEndHour      : integer;
+    fEndMinute    : integer;
+
+
+    constructor create(no: integer; AutoDoor:TAutoDoor );
+
+    property AutoDoor     : TAutoDoor read fAutoDoor write fAutoDoor ;
+    property No           : integer read fNo write fNo;
+    property Valid        : boolean read GetValid write SetValid;
+    property StartHour    : integer read GetStartHour write SetStartHour;
+    property StartMinute  : integer read GetStartMinute write SetStartMinute;
+    property EndHour      : integer read GetEndHour write SetEndHour;
+    property EndMinute    : integer read GetEndMinute write SetEndMinute;
+
+
+  end;
+
+  type TGLogData = class
+
+   private
+   fno:integer;
+   fId:string;
+   vEnrollNumber:integer;
+   vGranted:integer;
+   vMethod:integer;
+   vDoorMode:integer;
+   vFunNumber:integer;
+   vSensor:integer;
+
+   vYear:integer;
+   vMonth:integer;
+   vDay:integer;
+   vHour:integer;
+   vMinute:integer;
+   vSecond:integer;
+   fReturn:string;
+
+   function GetNo:integer;
+   function GetReturn:string;
+   function GetID:String;
+   function GetDoorMode:string;
+   function GetSensor:string;
+   function GetFunction_:string;
+   function GetMethod:string;
+   function GetTime:string;
+   function GetCapturedPhoto:boolean;
+   procedure SetTime(value:string);
+
+   public
+   property No:integer read GetNo write fno;
+   property Return:string read GetReturn;
+   property ID:string read getId write fId;
+   property DoorMode:string read GetDoorMode;
+   property Sensor:string read GetSensor;
+   property Function_:string read GetFunction_;
+   property Method:string read GetMethod;
+   property Time:string read GetTime write SetTime;
+   property CapturedPhoto:boolean read GetCapturedPhoto;
+
+
+  end;
+
+  type TDaylight = class
+    public
+    Valid  :integer; //0-Invalid, 1-Valid
+    Year   :integer; //0-99
+    Month  :integer; //1-12
+    Day    :integer; //1-31
+    Hour   :integer; //0-23
+    Min    :integer; //0-59
+  end;
+
+  type Daylight = class(TDaylight)
+
+    public
+    function GetFromStream(Stream : TStream) :TDaylight;
+    procedure Serialize(Stream : TStream);
+
+  end;
+
+  type TEnrollData = record
+    ValidTempId : word;
+    ValidCard   : word;
+    ValidFp1    : word;
+    ValidFp2    : word;
+    TempIdNumber: word;
+    Manager     : word;
+    CardData    : array[0..1] of word;
+    FpData1     : array[0.. 1415] of byte;
+    FpData2     : array[0.. 1415] of byte;
+  end;
+
+  PEnrollData = ^TEnrollData;
+
+  type THolidayItem = record
+
+   Valid : integer ; // '0-Invalid, 1-Valid
+   Month : integer; // '1-12
+   Day   : integer; // '1-31, 1-7
+   Number: integer ; // '0-Day is Day, 1-5-Day is Weekday
+
+  end;
+
+  type TUiHoliday = class
+
+   private
+   fNo : integer;
+   fHolidayItem : THolidayItem;
+   fValid : boolean;
+   fMonth : integer;
+   fDay   : integer;
+   fNumber: integer;
+
+   function getNumber(): integer;
+   function getValid(): boolean;
+   function getMonth(): integer;
+   function getDay(): integer;
+
+   procedure setNumber(aValue: integer);
+   procedure setValid(aValue: boolean);
+   procedure setMonth(aValue: integer);
+   procedure setDay(aValue: integer);
+
+   public
+   property No : integer read getNumber write setNumber;
+   property Valid : boolean read getValid write setValid ;
+   property Month : integer read getMonth write setMonth;
+   property Day   : integer read getDay write setDay;
+   property Number: integer read getNumber write setNumber;
+
+
+   constructor Create(iNo : integer; iHolidayItem :  THolidayItem);
+
+  end;
+
+  type TNoActKey = record
+     FKey1 : integer;
+     FKey2 : integer;
+     FKey3 : integer;
+     FKey4 : integer;
+  end;
+
+  type TMode = record
+      Valid:integer;       //0-Invalid, 1-Valid
+      SHour:integer;       //0-23-Start Hour
+      SMin:integer;       //0-59-Start Minute
+      EHour:integer;       //0-23-End Hour
+      EMin:integer;       //0-59-End Minute
+      Mode:integer;       //0-14-Door Mode
+
+  end;
+
+  type TCMR10VerificationMode = (Any=0, Finger=1, CD_or_FP=2,IDFP_or_CD=3,IDFP_or_IDCD=4,IDFP_or_CDFP=5,Open=6,Close=7,Card=8,ID_or_FP=9,ID_or_CD=10,IDCD=11,CDFP=12,IDFP=13,IDCDFP=14);
+
+  type TUiTMode = class(TUiDayMaskSetting)
+
+
+    private
+    fmode : TMode;
+    fNo : integer;
+    fValid : boolean;
+    fStartHour : integer;
+    fStartMinute : integer;
+    fEndHour : integer;
+    fEndMinute : integer;
+    fCMR10VerificationMode : TCMR10VerificationMode;
+
+    procedure SetCMR10VerificationMode(const Value: TCMR10VerificationMode);
+    procedure SetEndHour(Value: integer);
+    procedure SetEndMinute(Value: integer);
+    procedure SetNo(const Value: integer);
+    procedure SetStartHour(Value: integer);
+    procedure SetStartMinute(Value: integer);
+    procedure Settmode(Value: TMode);
+    procedure SetValid(const Value: boolean = true);
+
+    function GetCMR10VerificationMode():TCMR10VerificationMode;
+    function GetEndHour():integer;
+    function GetEndMinute():integer;
+    function GetNo():integer;
+    function GetStartHour():integer;
+    function GetStartMinute():integer;
+    function GetValid():boolean;
+
+
+    public
+    property mode : TMode read Fmode write Fmode;
+    property No : integer read FNo write SetNo;
+    property Valid : boolean read FValid write SetValid;
+    property StartHour : integer read FStartHour write SetStartHour;
+    property StartMinute : integer read FStartMinute write SetStartMinute;
+    property EndHour : integer read FEndHour write SetEndHour;
+    property EndMinute : integer read FEndMinute write SetEndMinute;
+    property CMR10VerificationMode : TCMR10VerificationMode read FCMR10VerificationMode write SetCMR10VerificationMode;
+
+    constructor Create(iNo:integer; iMode: TMode);
+
+  end;
+
+  type TTimeZone = record
+     Valid : integer;
+     Shour : integer;
+     Smin  : integer;
+     Ehour : integer;
+     Emin  : integer;
+  end;
+
+  type TUiTimeZone = class (TUiDayMaskSetting)
+
+    Private
+    fTzone: TtimeZone;
+    fNo:integer;
+    fValid:boolean;
+    fStartHour:integer;
+    fSmin:integer;
+    fEhour:integer;
+    fEmin:integer;
+
+    procedure SetValid(Value:boolean);
+    procedure SetStartHour(Value:integer);
+    procedure SetSmin(value:integer);
+    procedure SetEhour(value:integer);
+    procedure SetEmin(value:integer);
+    function GetValid:boolean;
+    function GetStartHour:integer;
+    function GetSmin:integer;
+    function GetEhour:integer;
+    function GetEmin:integer;
+
+    public
+    property No    : integer read fNo write fNo;
+    property Valid : boolean read GetValid write SetValid;
+    property StartHour : integer read GetStartHour write SetStartHour;
+    property Smin  : integer read GetSmin write SetSmin;
+    property EHour : integer read GetEhour write SetEmin;
+    Property Emin  : integer read GetEmin write SetEmin;
+
+    constructor Create(iNo: integer; iZone:ttimeZone);
+
+  end;
+
+  //CMR10 cihazý ile ilgili bitiþ
+
+
 
   //HGS Settings
   THGS_Settings = record
@@ -845,6 +1314,7 @@ type
   function prBytesToDateTimeEx(const AValue: array of byte; const AStartIndex : Integer = 0): TDateTime;
   function prBytesToWord(const AValue: array of byte; const AStartIndex : Integer = 0): Word;
   function prBytesToLongWord(const AValue: array of byte; const AStartIndex : Integer = 0): LongWord;
+  function prBytesToInt(const AValue: array of byte; const AStartIndex: Integer = 0): Integer;
   function prBytesToInt64(const AValue: array of byte; const AStartIndex: Integer = 0): Int64;
   function prBytesToBoolean(const AValue: array of byte; const AStartIndex : Integer = 0): Boolean;
   function prBytesToIPv4Str(const AValue: array of byte; const AStartIndex: Integer = 0): String;
@@ -906,6 +1376,13 @@ function prBytesToLongWord(const AValue: array of byte; const AStartIndex: Integ
 begin
   //Assert(Length(AValue) >= (AStartIndex+SizeOf(LongWord)));
   Result := PLongWord(@AValue[AStartIndex])^;
+end;
+
+function prBytesToInt(const AValue: array of byte; const AStartIndex: Integer = 0): Integer;
+ {$IFDEF USE_INLINE}inline;{$ENDIF}
+begin
+  //Assert(Length(AValue) >= (AStartIndex+SizeOf(LongWord)));
+  Result := PInteger(@AValue[AStartIndex])^;
 end;
 
 function prBytesToInt64(const AValue: array of byte; const AStartIndex: Integer = 0): Int64;
@@ -1525,5 +2002,654 @@ begin
   inherited;
   FaceData:=TList<string>.Create;
 end;
+
+{ TUiDayMaskSetting }
+
+constructor TUiDayMaskSetting.create(setting: TDayMaskSetting);
+begin
+
+    fsetting := setting;
+
+end;
+
+
+procedure TUiDayMaskSetting.SetHoliday(value : boolean);
+begin
+
+  if value then
+    fHoliday := boolean(fsetting.DMask or TCMRConstants.DMASK_HOL)
+  else
+    fHoliday := boolean(fsetting.DMask and TCMRConstants.DMASK_HOL);
+
+end;
+
+procedure TUiDayMaskSetting.SetMonday(value : boolean);
+begin
+
+  if value then
+    fMonday := boolean(fsetting.DMask or TCMRConstants.DMASK_MON)
+  else
+    fMonday := boolean(fsetting.DMask and TCMRConstants.DMASK_MON);
+
+end;
+
+procedure TUiDayMaskSetting.SetTuesDay(value : boolean);
+begin
+
+  if value then
+    fTuesDay := boolean(fsetting.DMask or TCMRConstants.DMASK_TUE)
+  else
+    fTuesDay := boolean(fsetting.DMask and TCMRConstants.DMASK_TUE);
+
+end;
+
+procedure TUiDayMaskSetting.SetWendsDay(value : boolean);
+begin
+
+  if value then
+    fWendsDay := boolean(fsetting.DMask or TCMRConstants.DMASK_WED)
+  else
+    fWendsDay := boolean(fsetting.DMask and TCMRConstants.DMASK_WED);
+
+end;
+
+procedure TUiDayMaskSetting.SetThursDay(value : boolean);
+begin
+
+  if value then
+    fThursDay := boolean(fsetting.DMask or TCMRConstants.DMASK_THU)
+  else
+    fThursDay := boolean(fsetting.DMask and TCMRConstants.DMASK_THU);
+
+end;
+
+procedure TUiDayMaskSetting.SetFriday(value : boolean);
+begin
+
+  if value then
+    fFriday := boolean(fsetting.DMask or TCMRConstants.DMASK_FRI)
+  else
+    fFriday := boolean(fsetting.DMask and TCMRConstants.DMASK_FRI);
+
+end;
+
+procedure TUiDayMaskSetting.SetSaturday(value : boolean);
+begin
+
+  if value then
+    fSaturday:= boolean(fsetting.DMask or TCMRConstants.DMASK_SAT)
+  else
+    fSaturday := boolean(fsetting.DMask and TCMRConstants.DMASK_SAT);
+
+end;
+
+procedure TUiDayMaskSetting.SetSunday(value : boolean);
+begin
+
+  if value then
+    fSunday:= boolean(fsetting.DMask or TCMRConstants.DMASK_SUN)
+  else
+    fSunday := boolean(fsetting.DMask and TCMRConstants.DMASK_SUN);
+
+end;
+
+function TUiDayMaskSetting.GetHoliday    : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_HOL) = TCMRConstants.DMASK_HOL;
+end;
+
+function TUiDayMaskSetting.GetMonday     : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_MON) = TCMRConstants.DMASK_MON;
+end;
+
+function TUiDayMaskSetting.GetTuesDay    : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_TUE) = TCMRConstants.DMASK_TUE;
+end;
+
+function TUiDayMaskSetting.GetWendsDay   : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_WED) = TCMRConstants.DMASK_WED;
+end;
+
+function TUiDayMaskSetting.GetThursDay   : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_THU) = TCMRConstants.DMASK_THU;
+end;
+
+function TUiDayMaskSetting.GetFriday     : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_FRI) = TCMRConstants.DMASK_FRI;
+end;
+
+function TUiDayMaskSetting.GetSaturday   : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_SAT) = TCMRConstants.DMASK_SAT;
+end;
+
+function TUiDayMaskSetting.GetSunday     : boolean;
+begin
+  result :=(fsetting.DMask and TCMRConstants.DMASK_SUN) = TCMRConstants.DMASK_SUN;
+end;
+
+destructor TUiDayMaskSetting.Destroy;
+begin
+inherited;
+end;
+
+
+{ TAutoDoor }
+
+function TAutoDoor.GetFromStream(stream: TStream): TAutoDoor;
+var
+reader: tBinaryReader;
+return: TAutoDoor;
+begin
+
+  try
+    return := TAutoDoor.Create;
+    reader := TBinaryReader.Create(stream);
+    return.Valid := reader.ReadInt32();
+    return.DMask := reader.ReadInt32();
+    return.SHour := reader.ReadInt32();
+    return.SMin  := reader.ReadInt32();
+    return.EHour := reader.ReadInt32();
+    return.EMin  := reader.ReadInt32();
+  finally
+    Result:=return;
+    reader.Free;
+  end;
+
+end;
+
+procedure TAutoDoor.Serialize(stream: TStream);
+var
+writer : tBinarywriter;
+begin
+
+  writer:=TBinaryWriter.Create(stream);
+  try
+    writer.Write(Valid);
+    writer.Write(DMask);
+    writer.Write(SHour);
+    writer.Write(SMin);
+    writer.Write(EHour);
+    writer.Write(EMin);
+  finally
+    writer.Free;
+  end;
+
+
+end;
+
+{ TUiAutoDoor }
+
+constructor TUiAutoDoor.create(no: integer; AutoDoor: TAutoDoor);
+begin
+  fNo:=no;
+  fAutoDoor := AutoDoor;
+end;
+
+function TUiAutoDoor.GetValid : boolean;
+begin
+  Result:= fAutoDoor.Valid <> 0;
+end;
+
+function TUiAutoDoor.GetStartHour : integer;
+begin
+  Result:= fAutoDoor.SHour;
+end;
+
+function TUiAutoDoor.GetStartMinute : integer;
+begin
+  Result:=fAutoDoor.SMin;
+end;
+
+function TUiAutoDoor.GetEndHour : integer;
+begin
+  Result:=fAutoDoor.EHour;
+end;
+
+function TUiAutoDoor.GetEndMinute : integer;
+begin
+  Result:=fAutoDoor.EMin;
+end;
+
+procedure TUiAutoDoor.SetValid(value : boolean);
+begin
+  fAutoDoor.Valid :=0;
+  if value then
+   fAutoDoor.Valid := 1;
+end;
+
+procedure TUiAutoDoor.SetStartHour(value : integer);
+begin
+
+  if value < 0 then value:=0;
+  if value > 23 then value:=23;
+  fAutoDoor.SHour := value;
+
+end;
+
+procedure TUiAutoDoor.SetStartMinute(value : integer);
+begin
+   if value < 0 then value:=0;
+   if value > 59 then value:=59;
+   fAutoDoor.SMin := value;
+end;
+
+procedure TUiAutoDoor.SetEndHour(value : integer);
+begin
+ if value <0 then value:=0;
+ if value >23 then value:=0;
+ fAutoDoor.EHour := value;
+end;
+
+procedure TUiAutoDoor.SetEndMinute(value : integer);
+begin
+ if value < 0 then value :=0;
+ if value > 59 then value:=59;
+ fAutoDoor.EMin := value;
+end;
+
+
+{ TGLogData }
+
+function TGLogData.GetCapturedPhoto: boolean;
+begin
+   result := (Self.vSecond shr 8) and $FF = 1;
+end;
+
+function TGLogData.GetDoorMode: string;
+begin
+
+end;
+
+function TGLogData.GetFunction_: string;
+begin
+
+end;
+
+function TGLogData.GetID: String;
+begin
+    if vEnrollNumber = -1 then
+     Result:='None'
+    else
+     Result:= Format('String', [vEnrollNumber]);
+end;
+
+function TGLogData.GetMethod: string;
+begin
+
+    case vDoorMode of
+
+      0: Result:='Any';
+      1: Result:='Finger';
+      2: Result:='CD or FP';
+      3: Result:='ID&FP or CD';
+      4: Result:='ID&FP or ID&CD';
+      5: Result:='ID&FP or CD&FP';
+      6: Result:='Open';
+      7: Result:='Close';
+      8: Result:='Card';
+      9: Result:='ID or FP';
+      10: Result:='ID or CD';
+      11: Result:='ID&CD';
+      12: Result:='CD&FP';
+      13: Result:='ID&FP';
+      14: Result:='ID&CD&FP';
+      else
+      Result:='Unknown';
+    end;
+
+end;
+
+function TGLogData.GetNo: integer;
+begin
+    Result := fno;
+end;
+
+function TGLogData.GetReturn: string;
+begin
+
+  if self.vGranted = 1 then
+    Result := 'Granted'
+  else
+    Result := 'Denied';
+
+end;
+
+function TGLogData.GetSensor: string;
+begin
+
+  if self.vSensor = 1 then
+   Result:='Open'
+  else
+   Result:='Clsoe';
+
+end;
+
+function TGLogData.GetTime: string;
+begin
+  Result:=Self.vDay.ToString()+'.'+
+          self.vMonth.ToString()+'.'+
+          self.vYear.ToString()+' '+
+          self.vHour.ToString()+':'+
+          (self.vMinute +$FF).ToString()+':'+
+          self.vSecond.ToString();
+end;
+
+
+
+procedure TGLogData.SetTime(value: string);
+begin
+
+    with self do
+    begin
+      vYear  :=2016;
+      vMonth :=1;
+      vDay   :=1;
+      vHour  :=1;
+      vMinute:=1;
+      vSecond:=1+$FF;
+    end;
+
+end;
+
+{ CMRUtil }
+
+function CMRUtil.pubIPAddrToLong(iIpAddress: string): integer;
+var
+addr : array of byte;
+begin
+
+ //içi yazýlacak
+
+end;
+
+function CMRUtil.pubLongToIPAddr(iValue: Cardinal): string;
+var
+strXML : string;
+nIPAddress : integer;
+begin
+   //içi yazýlacak
+end;
+
+{ TDaylight }
+
+
+
+
+{ Daylight }
+
+function Daylight.GetFromStream(Stream: TStream): TDaylight;
+var
+reader : tBinaryReader;
+begin
+
+  try
+
+    reader := TBinaryReader.Create(Stream);
+    Result.Valid := reader.ReadInt32;
+    Result.Year  := reader.ReadInt32;
+    Result.Month := reader.ReadInt32;
+    Result.Day   := reader.ReadInt32;
+    Result.Hour  := reader.ReadInt32;
+    Result.Min   := reader.ReadInt32;
+
+  finally
+    reader.Free;
+  end;
+
+
+end;
+
+procedure Daylight.Serialize(Stream : TStream);
+var
+writer : tBinaryWriter;
+begin
+
+  writer.Write(valid);
+  writer.Write(Year);
+  writer.Write(Month);
+  writer.Write(Day);
+  writer.Write(Hour);
+  writer.Write(Min);
+
+end;
+
+{ TUiHoliday }
+
+constructor TUiHoliday.Create(iNo: integer; iHolidayItem: THolidayItem);
+begin
+
+  fHolidayItem:=iHolidayItem;
+  fNo:=iNo;
+
+end;
+
+function TUiHoliday.getNumber(): integer;
+begin
+   Result:= fHolidayItem.Number;
+end;
+
+
+
+function TUiHoliday.getValid(): boolean;
+begin
+  Result:= fHolidayItem.Valid <> 0;
+end;
+
+function TUiHoliday.getMonth(): integer;
+begin
+   Result:=fHolidayItem.Month;
+end;
+
+function TUiHoliday.getDay(): integer;
+begin
+  Result:=fHolidayItem.Day;
+end;
+
+procedure TUiHoliday.setNumber(aValue: integer);
+begin
+   if aValue < 0 then aValue:=0;
+   if aValue > 5 then aValue:=5;
+   fHolidayItem.Number :=aValue;
+end;
+
+
+
+procedure TUiHoliday.setValid(aValue: boolean);
+begin
+   fHolidayItem.Valid := 0;
+   if aValue then
+    fHolidayItem.Valid := 1;
+end;
+
+procedure TUiHoliday.setMonth(aValue: integer);
+begin
+  if aValue < 1 then aValue:=1;
+  if aValue > 12 then aValue:=12;
+  fHolidayItem.Month:=aValue;
+end;
+
+procedure TUiHoliday.setDay(aValue: integer);
+begin
+  if aValue < 1  then aValue:=1;
+  if aValue > 31 then aValue:=31;
+  fHolidayItem.Day := aValue;
+end;
+
+
+{ TUiTMode }
+
+constructor TUiTMode.Create(iNo: integer; iMode: TMode);
+begin
+  fNo := iNo;
+  fmode:= imode;
+end;
+
+procedure TUiTMode.SetCMR10VerificationMode(
+  const Value: TCMR10VerificationMode);
+begin
+  FCMR10VerificationMode := Value;
+end;
+
+procedure TUiTMode.SetEndHour(Value: integer);
+begin
+  if Value < 0 then  Value:=0;
+  if Value > 23 then Value:=23;
+  fmode.EHour:=Value;
+end;
+
+procedure TUiTMode.SetEndMinute(Value: integer);
+begin
+  if Value < 0 then  Value:=0;
+  if Value > 59 then Value:=59;
+  fmode.EMin:=Value;
+end;
+
+procedure TUiTMode.SetNo(const Value: integer);
+begin
+  FNo := Value;
+end;
+
+procedure TUiTMode.SetStartHour(Value: integer);
+begin
+  if Value < 0 then Value:=0;
+  if Value > 23 then Value:=23;
+  fmode.SHour:= Value;
+end;
+
+procedure TUiTMode.SetStartMinute(Value: integer);
+begin
+  if Value < 0  then value :=0;
+  if Value > 59 then value :=59;
+  fmode.SMin :=Value;
+end;
+
+procedure TUiTMode.Settmode(Value: TMode);
+begin
+  //fmode.Mode:= integer(Value);
+end;
+
+procedure TUiTMode.SetValid(const Value: boolean = true);
+begin
+  if fmode.Valid = 1 then
+   fValid:=true
+  else
+   fValid:=false;
+end;
+
+function TUiTMode.GetCMR10VerificationMode():TCMR10VerificationMode;
+begin
+
+end;
+
+function TUiTMode.GetEndHour():integer;
+begin
+  Result:=fmode.EHour;
+end;
+
+function TUiTMode.GetEndMinute():integer;
+begin
+  Result:=fmode.EMin;
+end;
+
+function TUiTMode.GetNo():integer;
+begin
+
+end;
+
+function TUiTMode.GetStartHour():integer;
+begin
+
+end;
+
+function TUiTMode.GetStartMinute():integer;
+begin
+    Result:=fmode.SMin;
+end;
+
+
+function TUiTMode.GetValid():boolean;
+begin
+   Result:=false;
+   Result:=fmode.Valid <> 0 ;
+end;
+
+
+{ TUiTimeZone }
+
+constructor TUiTimeZone.Create(iNo: integer; iZone: ttimeZone);
+begin
+  fNo := ino;
+  fTzone:=iZone;
+end;
+
+procedure TUiTimeZone.SetValid(Value:boolean);
+begin
+
+  fTzone.Valid:=0;
+  if Value then fTzone.Valid := 1;
+
+end;
+
+procedure TUiTimeZone.SetStartHour(Value:integer);
+begin
+  if Value < 0 then Value:=0;
+  if Value > 0 then Value:=23;
+  fTzone.Shour := Value;
+end;
+
+procedure TUiTimeZone.SetSmin(value:integer);
+begin
+  if value < 0 then  value:=0;
+  if value > 59 then value:=59;
+  fTzone.Smin:=value;
+end;
+
+procedure TUiTimeZone.SetEhour(value:integer);
+begin
+  if value < 0 then value:=0;
+  if value > 23 then value:=23;
+  fTzone.Ehour:=value;
+end;
+
+procedure TUiTimeZone.SetEmin(value:integer);
+begin
+  if value < 0 then  value:=0;
+  if value > 59 then value:=59;
+  fTzone.Emin:=value;
+
+end;
+
+function TUiTimeZone.GetValid:boolean;
+begin
+   Result:=false;
+   Result:=fTzone.Valid <> 0;
+end;
+
+function TUiTimeZone.GetStartHour:integer;
+begin
+  Result:=fTzone.Shour;
+end;
+
+function TUiTimeZone.GetSmin:integer;
+begin
+  Result:=fTzone.Smin;
+end;
+
+function TUiTimeZone.GetEhour:integer;
+begin
+  Result:=fTzone.Ehour;
+end;
+
+function TUiTimeZone.GetEmin:integer;
+begin
+  Result:=fTzone.Emin;
+end;
+
 
 end.

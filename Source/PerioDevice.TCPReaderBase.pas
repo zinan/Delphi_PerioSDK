@@ -412,24 +412,13 @@ constructor TCheckOnlineThread.Create(const Interval:Integer;Rdr: TTcpRdrBase);
 Begin
   inherited Create(false);
   Priority := tpTimeCritical;
-  try
-    if Interval > 5 then
-      fInterval := Interval
-    else
-      fInterval := 5;
-    fEnabled := false;
-    fRdr := Rdr;
-    InitializeCriticalSection(CSRdr);
-  except
-    on E: Exception do
-    begin
-    {
-       Synchronize( procedure
-                  begin frdr.LogError('TCheckOnlineThread.Create Error :',E.Message);
-                  End  );
-                  }
-    end;
-  end; // try
+  if Interval > 5 then
+    fInterval := Interval
+  else
+    fInterval := 5;
+  fEnabled := false;
+  fRdr := Rdr;
+  InitializeCriticalSection(CSRdr);
 End;
 
 procedure TCheckOnlineThread.Execute;
@@ -791,7 +780,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'LoginDeviceArt','Exception Error : ' + E.Message);
-      //LogError('LoginDeviceArt','Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -818,7 +806,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'LoginDeviceStandart', 'Exception Error : ' + E.Message);
-      //LogError('LoginDeviceStandart', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -845,7 +832,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'LoginDeviceStandart', 'Exception Error : ' + E.Message);
-      //LogError('LoginDeviceStandart', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -868,7 +854,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'LoginDevice', 'Exception Error : ' + E.Message);
-      //LogError('LoginDevice', 'Exception Error : ' + E.Message);
     end;
   end;
 End;
@@ -918,7 +903,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'LoginDevice', 'Exception Error : ' + E.Message);
-      //LogError('LoginDevice', 'Exception Error : ' + E.Message);
     end;
   end;
 End;
@@ -1404,7 +1388,6 @@ Begin
         on E: Exception do
         begin
           DoLog(lgError,'ExecuteCmd', 'Exception Error : ' + E.Message);
-          //LogError('ExecuteCmd', 'Exception Error : ' + E.Message);
           iErr := TErrors.EXCEPTION;
           fOnCmd := False;
         end;
@@ -1700,7 +1683,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'ConnectIndy', 'Exception Error 1 : ' + E.Message);
-      //LogError('ConnectIndy', 'Exception Error 1 : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -1818,7 +1800,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'CheckConnection','Exception Error : ' + E.Message);
-      //LogError('CheckConnection','Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -1835,14 +1816,12 @@ Var
   iErr: Integer;
 Begin
   DoLog(lgDebug,'ReConnect','ReConnect 1');
-  //LogDebug('ReConnect','ReConnect 1');
   try
     DoDisConnect(false);
   except
     on E: Exception do
     begin
       DoLog(lgError,'ReConnect DisConnect', 'Exception Error : ' + E.Message);
-      //LogError('ReConnect DisConnect', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -1852,7 +1831,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'ReConnect Connect', 'Exception Error : ' + E.Message);
-      //LogError('ReConnect Connect', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -1985,7 +1963,6 @@ begin
     begin
       iErr := TErrors.EXCEPTION;
       DoLog(lgError,'Receive', 'Exception:' + E.Message);
-      //LogError('Receive', 'Exception:' + E.Message);
     end;
   end; // try
   Result := iErr;
@@ -2044,7 +2021,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDevicePassword', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDevicePassword', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2100,7 +2076,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceGeneralSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceGeneralSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2153,7 +2128,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceGeneralSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceGeneralSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2194,7 +2168,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceTCPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceTCPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2251,7 +2224,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceTCPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceTCPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2282,7 +2254,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceUDPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceUDPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2319,7 +2290,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceUDPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceUDPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2346,7 +2316,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetMACAddress', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetMACAddress', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2370,7 +2339,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetMACAddress', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetMACAddress', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2409,7 +2377,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceWorkModeSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceWorkModeSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2447,7 +2414,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceWorkModeSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceWorkModeSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2476,7 +2442,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetWEbPassword', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetWEbPassword', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2507,7 +2472,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetWebPassword', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetWebPassword', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2534,7 +2498,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetFactoryDefault', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetFactoryDefault', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2563,7 +2526,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetSerialNumber', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetSerialNumber', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2589,7 +2551,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetSerialNumber', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetSerialNumber', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2612,7 +2573,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpReboot', 'Exception Error : ' + E.Message);
-      //LogError('tcpReboot', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2640,7 +2600,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetFwVwersion', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetFwVwersion', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2671,7 +2630,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDateTime', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDateTime', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2707,7 +2665,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetMfrKeyList', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetMfrKeyList', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2740,7 +2697,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetMfrKeyList', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetMfrKeyList', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2777,7 +2733,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetHeadTailCapacity', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetHeadTailCapacity', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2806,7 +2761,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetHeadTail', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetHeadTail', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2833,7 +2787,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceStatus', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceStatus', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2857,7 +2810,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceStatus', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceStatus', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2916,7 +2868,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetLCDMessages', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetLCDMessages', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -2972,7 +2923,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetLCDMessages', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetLCDMessages', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3031,7 +2981,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3059,7 +3008,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetDeviceClientTCPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetDeviceClientTCPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3090,7 +3038,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetDeviceClientTCPSettings', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetDeviceClientTCPSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3119,7 +3066,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetWeekDayNames', 'Exception Error : ' + E.Message);
-      //LogError('tcpGetWeekDayNames', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3144,7 +3090,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetWeekDayNames', 'Exception Error : ' + E.Message);
-      //LogError('tcpSetWeekDayNames', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3182,7 +3127,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpReadPageData', 'Exception Error : ' + E.Message);
-      //LogError('tcpReadPageData', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3234,7 +3178,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpReadPageData', 'Exception Error : ' + E.Message);
-      //gError('tcpReadPageData', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3257,7 +3200,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSerialTestFunction', 'Exception Error : ' + E.Message);
-      //gError('tcpSerialTestFunction', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3280,7 +3222,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetLCDMessagesFactoryDefault', 'Exception Error : ' + E.Message);
-      //gError('tcpSetLCDMessagesFactoryDefault', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3303,7 +3244,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpTestCreateRecordFunction', 'Exception Error : ' + E.Message);
-      //gError('tcpTestCreateRecordFunction', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3332,7 +3272,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetSerialPortBaudrateSettings', 'Exception Error : ' + E.Message);
-      //gError('tcpGetSerialPortBaudrateSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3358,7 +3297,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetSerialPortBaudrateSettings', 'Exception Error : ' + E.Message);
-      //gError('tcpSetSerialPortBaudrateSettings', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3388,7 +3326,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpReadCardBlockData', 'Exception Error : ' + E.Message);
-      //gError('tcpReadCardBlockData', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3416,7 +3353,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpWriteCardBlockData(', 'Exception Error : ' + E.Message);
-      //gError('tcpWriteCardBlockData(', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3476,7 +3412,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
-      //gError('tcpSetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3504,7 +3439,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpGetReaderServiceStatus', 'Exception Error : ' + E.Message);
-      //gError('tcpGetReaderServiceStatus', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3529,7 +3463,6 @@ Begin
     on E: Exception do
     begin
       DoLog(lgError,'tcpSetReaderServiceStatus', 'Exception Error : ' + E.Message);
-      //gError('tcpSetReaderServiceStatus', 'Exception Error : ' + E.Message);
       iErr := TErrors.EXCEPTION;
     end;
   end; // try
@@ -3560,8 +3493,6 @@ Begin
     Result := False;
     iErr := TErrors.INVALID_COMN_KEY;
     DoLog(lgError,'SetDeviceLoginKey', ' SetDeviceLoginKey Error No : ' +IntToStr(iErr));
-//  LogError('SetDeviceLoginKey', ' SetDeviceLoginKey Error No : ' +
-//    IntToStr(iErr));
   End;
 End;
 
@@ -3864,7 +3795,6 @@ begin
     on E: Exception do
     begin
       DoLog(lgError,'SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
-      //LogError('SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
     end;
   end; // try
 
@@ -3915,7 +3845,6 @@ begin
     on E: Exception do
     begin
       DoLog(lgError,'SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
-      //LogError('SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
     end;
   end; // try
 
@@ -3970,7 +3899,6 @@ begin
     on E: Exception do
     begin
       DoLog(lgError,'SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
-      //LogError('SetBeepRelayAndSecreenMessage', 'Exception Error : ' + E.Message);
     end;
   end; // try
 
